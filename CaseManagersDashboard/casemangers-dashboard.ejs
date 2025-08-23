@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QOLAE Case Manager Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
+        }
+
+        .qolae-title {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: #8892b0;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .badges {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge.secure {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge.gdpr {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .welcome-section {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            background: #f8fafc;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .session-info {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .progress-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+            background: white;
+            border: 3px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .step-circle.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .step-circle.completed {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 14px;
+            color: #64748b;
+            max-width: 100px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .workflow-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .workflow-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .card-description {
+            color: #64748b;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-disabled {
+            background: #f1f5f9;
+            color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-active {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-pending {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .status-locked {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .footer {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .security-notice {
+            background: #fef7cd;
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-text {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .footer-nav {
+            display: flex;
+            gap: 25px;
+        }
+
+        .footer-nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .footer-nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 10px;
+            }
+            
+            .header-card {
+                padding: 30px 20px;
+            }
+            
+            .badges {
+                position: static;
+                margin-top: 20px;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .progress-bar {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            
+            .session-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header-card">
+            <div class="badges">
+                <div class="badge secure">
+                    🔒 Secure
+                </div>
+                <div class="badge gdpr">
+                    📋 GDPR Compliant
+                </div>
+            </div>
+            
+            <h1 class="qolae-title">QOLAE</h1>
+            <p class="subtitle">Case Management & Assessment Portal</p>
+            
+            <div class="welcome-section">
+                <h2 class="welcome-title">Welcome Liz from QOLAE Case Management</h2>
+                <p class="welcome-text">Access your secure case management workflow tools. All data is encrypted and GDPR compliant.</p>
+                <div class="session-info">
+                    <span><strong>Last login:</strong> 22nd August 2025</span>
+                    <span><strong>Session:</strong> Encrypted & Secure</span>
+                    <span><strong>PIN:</strong> CM-002690</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2 class="progress-title">Your Case Management Progress</h2>
+            <div class="progress-bar">
+                <div class="progress-step">
+                    <div class="step-circle completed">✓</div>
+                    <span class="step-label">Case Assignment</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle active">2</div>
+                    <span class="step-label">Client Contact</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Assessment</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">Report Writing</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle">5</div>
+                    <span class="step-label">Review Process</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards Grid -->
+        <div class="cards-grid">
+            <!-- Active Cases -->
+            <div class="workflow-card" onclick="openModal('activeCasesModal')">
+                <div class="status-badge status-active">● 3 Active Cases</div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: #f59e0b;">📋</div>
+                    <h3 class="card-title">Active Cases</h3>
+                </div>
+                <p class="card-description">
+                    View and manage your current active cases. Access client details, case progress, and upcoming assessments.
+                </p>
+                <div class="card-actions">
+                    <button class="btn btn-primary">📋 View Active Cases</button>
+                    <button class="btn btn-secondary">👁️ Case Overview</button>
+                </div>
+            </div>
+
+            <!-- Client Communications -->
+            <div class="workflow-card" onclick="openModal('clientCommModal')">
+                <div class="status-badge status-active">● 2 Pending Calls</div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: #8b5cf6;">📞</div>
+                    <h3 class="card-title">Client Communications</h3>
+                </div>
+                <p class="card-description">
+                    Contact clients for initial introductions and INA appointment bookings. Manage communication history and preferences.
+                </p>
+                <div class="card-actions">
+                    <button class="btn btn-primary">📞 Make Client Calls</button>
+                    <button class="btn btn-secondary">📝 View Call History</button>
+                </div>
+            </div>
+
+            <!-- Assessment Scheduling -->
+            <div class="workflow-card" onclick="openModal('assessmentModal')">
+                <div class="status-badge status-pending">● 1 Scheduled</div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: #06b6d4;">📅</div>
+                    <h3 class="card-title">INA Assessments</h3>
+                </div>
+                <p class="card-description">
+                    Schedule and conduct Independent Needs Assessments. Manage home visits, complete INA checklists, and document findings.
+                </p>
+                <div class="card-actions">
+                    <button class="btn btn-primary">📅 Schedule Assessment</button>
+                    <button class="btn btn-secondary">📋 INA Checklist</button>
+                    <button class="btn btn-secondary">📷 Upload Evidence</button>
+                </div>
+            </div>
+
+            <!-- Medical Records Access -->
+            <div class="workflow-card" onclick="openModal('medicalModal')">
+                <div class="status-badge status-locked">🔒 Consent Required</div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: #dc2626;">🏥</div>
+                    <h3 class="card-title">Medical Records Access</h3>
+                </div>
+                <p class="card-description">
+                    Access client medical notes and confidential information. Note: Access is restricted until client consent is received and verified.
+                </p>
+                <div class="card-actions">
+                    <button class="btn btn-disabled">🔒 Awaiting Consent</button>
+                    <button class="btn btn-secondary">📋 View Consent Status</button>
+                </div>
+            </div>
+
+            <!-- Report Writing -->
+            <div class="workflow-card" onclick="openModal('reportModal')">
+                <div class="status-badge status-pending">● 1 Draft</div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: #059669;">📝</div>
+                    <h3 class="card-title">Report Writing</h3>
+                </div>
+                <p class="card-description">
+                    Create comprehensive INA reports with rehabilitation recommendations. Auto-populate data from assessments and medical research.
+                </p>
+                <div class="card-actions">
+                    <button class="btn btn-primary">📝 Write Report</button>
+                    <button class="btn btn-secondary">📄 View Templates</button>
+                    <button class="btn btn-secondary">💾 Save Draft</button>
+                </div>
+            </div>
+
+            <!-- Reader Management -->
+            <div class="workflow-card" onclick="openModal('readerModal')">
+                <div class="status-badge status-active">● 24hr Deadline</div>
+                <div class="card-header">
+                    <div class="card-icon" style="background: #7c3aed;">👥</div>
+                    <h3 class="card-title">Reader Review System</h3>
+                </div>
+                <p class="card-description">
+                    Manage the two-tier review process. Send drafts to non-medical readers first, then medical professionals for final review.
+                </p>
+                <div class="card-actions">
+                    <button class="btn btn-primary">📤 Send to Reader</button>
+                    <button class="btn btn-secondary">🕒 Check Status</button>
+                    <button class="btn btn-secondary">📧 Manage Readers</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="security-notice">
+                ⚠️ <strong>Security Notice:</strong> All data is encrypted in transit and at rest. This system is GDPR compliant and maintains strict audit trails for all actions.
+            </div>
+            <div class="footer-links">
+                <span class="footer-text">© 2025 QOLAE. All rights reserved. Secure case management portal.</span>
+                <nav class="footer-nav">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Support</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="activeCasesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Active Cases Management</h2>
+                <button class="close-btn" onclick="closeModal('activeCasesModal')">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <h3 style="margin-bottom: 15px;">Current Active Cases</h3>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <strong>Case #WW-001: John Smith</strong><br>
+                    <span style="color: #64748b;">RTA - Spinal Injuries | Woodthorpe-Wright & Partners</span><br>
+                    <span style="color: #059669; font-size: 14px;">● Assessment Scheduled: Tomorrow 2:00 PM</span>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <strong>Case #AB-002: Sarah Johnson</strong><br>
+                    <span style="color: #64748b;">Workplace Injury - Upper Limb | Adams & Partners</span><br>
+                    <span style="color: #f59e0b; font-size: 14px;">● Awaiting Client Consent</span>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px;">
+                    <strong>Case #CD-003: Michael Brown</strong><br>
+                    <span style="color: #64748b;">Clinical Negligence | City Legal</span><br>
+                    <span style="color: #dc2626; font-size: 14px;">● Report Review Due: 18 hours</span>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="width: 100%;">View Full Case Details</button>
+        </div>
+    </div>
+
+    <div id="clientCommModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Client Communications</h2>
+                <button class="close-btn" onclick="closeModal('clientCommModal')">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <h3 style="margin-bottom: 15px;">Pending Client Contacts</h3>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <strong>John Smith</strong> - 07123 456789<br>
+                    <span style="color: #64748b;">Initial introduction call required</span><br>
+                    <button class="btn btn-primary" style="margin-top: 10px; padding: 8px 15px; font-size: 14px;">📞 Call Now</button>
+                </div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px;">
+                    <strong>Sarah Johnson</strong> - 07987 654321<br>
+                    <span style="color: #64748b;">INA appointment booking required</span><br>
+                    <button class="btn btn-primary" style="margin-top: 10px; padding: 8px 15px; font-size: 14px;">📞 Call Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="assessmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">INA Assessment Management</h2>
+                <button class="close-btn" onclick="closeModal('assessmentModal')">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <h3 style="margin-bottom: 15px;">Upcoming Assessments</h3>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <strong>John Smith - Home Assessment</strong><br>
+                    <span style="color: #64748b;">Tomorrow 2:00 PM | 123 Main St, London</span><br>
+                    <span style="color: #059669;">✓ INA Checklist prepared</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-primary">📋 View Checklist</button>
+                    <button class="btn btn-secondary">📱 Get Directions</button>
+                    <button class="btn btn-secondary">📷 Upload Photos</button>
+                    <button class="btn btn-secondary">🎙️ Add Recording</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="medicalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Medical Records Access</h2>
+                <button class="close-btn" onclick="closeModal('medicalModal')">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <div style="background: #fef7cd; border: 1px solid #f59e0b; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <strong>⚠️ Access Restricted</strong><br>
+                    Client consent must be received and verified before accessing medical records.
+                </div>
+                <h3 style="margin-bottom: 15px;">Consent Status</h3>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px;">
+                    <strong>John Smith:</strong> <span style="color: #059669;">✓ Consent Received</span><br>
+                    <strong>Sarah Johnson:</strong> <span style="color: #f59e0b;">⏳ Awaiting Consent</span><br>
+                    <strong>Michael Brown:</strong> <span style="color: #059669;">✓ Consent Received</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Report Writing</h2>
+                <button class="close-btn" onclick="closeModal('reportModal')">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <h3 style="margin-bottom: 15px;">Current Reports</h3>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <strong>Michael Brown - INA Report</strong><br>
+                    <span style="color: #64748b;">Clinical Negligence Assessment</span><br>
+                    <span style="color: #f59e0b;">📝 Draft in Progress</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary">📝 Continue Writing</button>
+                    <button class="btn btn-secondary">📄 Use Template</button>
+                    <button class="btn btn-secondary">💾 Save Draft</button>
+                    <button class="btn btn-secondary">📤 Send to Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="readerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Reader Review System</h2>
+                <button class="close-btn" onclick="closeModal('readerModal')">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <h3 style="margin-bottom: 15px;">Review Process Status</h3>
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                    <strong>Michael Brown Report</strong><br>
+                    <span style="color: #64748b;">Stage 1: Non-Medical Review</span><br>
+                    <span style="color: #dc2626;">⏰ Due in 18 hours</span>
+                </div>
+                <div style="background: #fef3c7; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <strong>Review Process:</strong><br>
+                    1. Non-medical reader (24hr deadline)<br>
+                    2. Medical professional (24hr deadline)<br>
+                    3. Final corrections & lawyer delivery
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-primary">📤 Send to Reader</button>
+                    <button class="btn btn-secondary">👥 Manage Readers</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+
+        // Add some dynamic updates to simulate real workflow
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate progress updates
+            setTimeout(() => {
+                const activeStep = document.querySelector('.step-circle.active');
+                if (activeStep) {
+                    activeStep.innerHTML = '✓';
+                    activeStep.classList.remove('active');
+                    activeStep.classList.add('completed');
+                    
+                    // Move to next step
+                    const nextStep = activeStep.parentElement.nextElementSibling;
+                    if (nextStep) {
+                        const nextCircle = nextStep.querySelector('.step-circle');
+                        nextCircle.classList.add('active');
+                        nextCircle.innerHTML = '3';
+                    }
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
