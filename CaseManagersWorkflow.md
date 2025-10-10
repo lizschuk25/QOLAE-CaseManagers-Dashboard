@@ -38,7 +38,68 @@ visit appointment with the client/Patient in her calendar.
 
 12.Liz will have entered the details on the Readers portal/workspace and once Consent
 has been sent off, she will tick the box that autogenerates a reader specific PIN
-no and emailed to the Readers. NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digitally on the portal for the Readers once they log on to the system and have gone through the 2 way FA authentication system. Liz’s automatic signature will also be applied.
+no and emailed to the Readers. NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digitally on the portal for the Readers once they log on to the system and have gone through the 2 way FA authentication system. Liz's automatic signature will also be applied.
+
+---
+
+## READERS COMPLIANCE REVIEW (New HR Workflow)
+
+**12a. Reader Compliance Submission:**
+- After the Reader completes their initial login (PIN, 2FA, password creation), they are redirected to the **HR Compliance Gate** (`readers.qolae.com/compliance`)
+- Reader must submit:
+  - **CV (PDF upload)**
+  - **2 References:** 1 professional + 1 character (referee contact details only at this stage)
+- On submission, Liz receives a **notification** in her Case Managers Dashboard
+- Status badge appears: "[Reader Name] - Compliance Submitted" (pending)
+- Reader cannot access their dashboard until compliance is approved
+
+**12b. Liz's Compliance Review Process:**
+
+**Step 1: Initial Review**
+- Click "Review" button on Case Managers Dashboard
+- Modal opens showing:
+  - Reader's CV (can download/view)
+  - Professional reference details (name, title, organisation, email, phone, relationship)
+  - Character reference details (name, relationship, email, phone, duration known)
+
+**Step 2: Reference Collection (Flexible Process)**
+
+**Option A - Phone Reference (Preferred):**
+1. Liz calls the referee
+2. Liz fills out `reference-form.ejs` with referee's answers during the call
+3. System automatically emails the **pre-filled** form to referee for review and digital signature
+4. Referee receives email → reviews pre-filled form (takes 30 seconds) → signs digitally → submits
+5. Signed reference is saved to `qolae_hrcompliance` database
+6. Liz receives notification: "Reference received from [Referee Name]"
+
+**Option B - Email Reference (if referee prefers):**
+1. Referee prefers not to have phone call
+2. Liz sends blank `reference-form.ejs` via system email
+3. Referee fills out entire form themselves and signs digitally
+4. Signed reference is saved to `qolae_hrcompliance` database
+5. Liz receives notification: "Reference received from [Referee Name]"
+
+**Step 3: Final Approval**
+- Once **both references** are received and signed
+- Liz reviews all compliance documents (CV + 2 signed references)
+- Liz clicks "Approve Compliance"
+- Actions triggered:
+  - Compliance record is **locked** in `qolae_hrcompliance` database (audit-ready)
+  - Reader's account is fully activated
+  - Reader receives email: "Your compliance has been approved. You can now access your dashboard."
+- Status updates to: "[Reader Name] - Compliance Approved ✓"
+
+**Database & Security:**
+- All HR compliance data (CVs, references) stored in separate `qolae_hrcompliance` database
+- Only Case Managers have access to HR compliance records
+- Audit log tracks all access: who viewed/downloaded/approved what and when
+- Readers do NOT have access to their own compliance records from their dashboard
+
+**Next Login:**
+- Reader logs in → automatically redirected to their Readers Dashboard (no compliance gate)
+- Reader can now access NDA workflow and begin their tasks
+
+---
 
 13.Once consent is received Liz’s signature, other CM's signature will be automatically applied and the INA workflow Process will commence. Liz then has access to the Medical notes and document and goes through all of this meticulously. Some of the details in the notes will be added to the INA form.
 

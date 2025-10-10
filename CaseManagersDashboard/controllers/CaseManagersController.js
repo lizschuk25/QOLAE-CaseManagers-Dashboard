@@ -15,7 +15,7 @@ import { Pool } from 'pg';
 // DATABASE CONNECTION - qolae_readers
 // ==============================================
 const readersDb = new Pool({
-  connectionString: process.env.READERS_DATABASE_URL || 'postgresql://readers_user:readers_password@localhost:5432/qolae_readers'
+  connectionString: process.env.READERS_DATABASE_URL 
 });
 
 // ==============================================
