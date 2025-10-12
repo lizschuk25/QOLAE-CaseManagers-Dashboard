@@ -1,10 +1,29 @@
+<!-- 
+  * QOLAE Readers Registration Card
+  * Case Manager registration form for new readers
+  * Organized by Location Block Protocol
+  * Author: Liz
+  * Date: October 11, 2025
+  * 
+  * WORKFLOW STEPS (Mirrored in Location Blocks):
+  * 1. Reader Basic Info (Name, Email, Phone)
+  * 2. Reader Type Selection (First Reader vs Second Reader/Medical)
+  * 3. Medical Verification (NMC/GMC for Second Readers)
+  * 4. PIN Generation
+  * 5. Email Invitation Sending
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Reader - QOLAE Case Managers Dashboard</title>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 0: ALL CSS STYLES -->
+<!-- ========================================== -->
     <style>
+        /* ===== RESET & BASE STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -23,6 +42,7 @@
             margin: 0 auto;
         }
 
+        /* ===== HEADER STYLES ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -60,6 +80,7 @@
             background-color: #5a67d8;
         }
 
+        /* ===== REGISTRATION CARD STYLES ===== */
         .registration-card {
             background: white;
             border-radius: 12px;
@@ -82,6 +103,7 @@
             margin-bottom: 32px;
         }
 
+        /* ===== FORM STYLES ===== */
         .form-group {
             margin-bottom: 24px;
         }
@@ -135,6 +157,14 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* ===== READER TYPE INFO BADGES ===== */
         .reader-type-info {
             display: flex;
             gap: 12px;
@@ -161,6 +191,7 @@
             border: 1px solid #86efac;
         }
 
+        /* ===== MEDICAL SECTION STYLES ===== */
         .medical-section {
             display: none;
             animation: slideDown 0.3s ease-out;
@@ -181,6 +212,7 @@
             }
         }
 
+        /* ===== VERIFICATION PANEL STYLES ===== */
         .verification-panel {
             background: #fef3c7;
             border: 2px solid #f59e0b;
@@ -254,6 +286,7 @@
             border: 1px solid #ef4444;
         }
 
+        /* ===== PIN SECTION STYLES ===== */
         .pin-section {
             background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
             padding: 20px;
@@ -293,6 +326,7 @@
             letter-spacing: 2px;
         }
 
+        /* ===== BUTTON STYLES ===== */
         .btn {
             padding: 12px 24px;
             border-radius: 8px;
@@ -323,6 +357,26 @@
             transform: none;
         }
 
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== CHECKBOX STYLES ===== */
         .checkbox-wrapper {
             display: flex;
             align-items: center;
@@ -354,25 +408,7 @@
             user-select: none;
         }
 
-        .btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 14px;
-            font-size: 16px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-primary:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        /* ===== MESSAGE STYLES ===== */
         .success-message {
             display: none;
             background: #d1fae5;
@@ -404,6 +440,7 @@
             display: block;
         }
 
+        /* ===== FORM FOOTER STYLES ===== */
         .form-footer {
             margin-top: 32px;
             padding-top: 24px;
@@ -412,36 +449,36 @@
             color: #6b7280;
             font-size: 12px;
         }
-
-        .help-text {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 1: HEADER & NAVIGATION -->
+<!-- ========================================== -->
         <div class="header">
             <h1>📖 Register Reader</h1>
             <a href="/case-managers-dashboard" class="back-button">← Back to Dashboard</a>
         </div>
 
-        <!-- Success Message -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 2: SUCCESS & ERROR MESSAGES -->
+<!-- ========================================== -->
         <div id="successMessage" class="success-message">
             <strong>✅ Reader Registered Successfully!</strong>
             <p style="margin-top: 8px;">Email invitation sent to reader.</p>
         </div>
 
-        <!-- Error Message -->
         <div id="errorMessage" class="error-message">
             <strong>❌ Registration Failed</strong>
             <p id="errorText" style="margin-top: 8px;"></p>
         </div>
 
-        <!-- Registration Card -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 3: REGISTRATION FORM - BASIC INFO -->
+<!-- Maps to: Reader name, email, phone collection -->
+<!-- ========================================== -->
         <div class="registration-card">
             <h2 class="card-title">📋 Reader Registration</h2>
             <p class="card-subtitle">Register a new reader to review confidential reports</p>
@@ -491,7 +528,10 @@
                     >
                 </div>
 
-                <!-- Reader Type -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 4: READER TYPE SELECTION -->
+<!-- Maps to: First Reader (Admin/Lay) vs Second Reader (Medical) -->
+<!-- ========================================== -->
                 <div class="form-group">
                     <label class="form-label">
                         Reader Type <span class="required">*</span>
@@ -516,7 +556,11 @@
                     </div>
                 </div>
 
-                <!-- Medical Professional Section (conditional) -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 5: MEDICAL PROFESSIONAL SECTION -->
+<!-- Maps to: NMC/GMC verification for Second Readers only -->
+<!-- Conditional visibility based on reader type -->
+<!-- ========================================== -->
                 <div id="medicalSection" class="medical-section">
                     <!-- Specialization -->
                     <div class="form-group">
@@ -583,7 +627,10 @@
                     </div>
                 </div>
 
-                <!-- PIN Generation Section -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 6: PIN GENERATION -->
+<!-- Maps to: Auto-generate unique reader PIN -->
+<!-- ========================================== -->
                 <div class="pin-section">
                     <h3>🔑 Reader PIN Generation</h3>
                     <div class="pin-display-row">
@@ -608,7 +655,10 @@
                     </div>
                 </div>
 
-                <!-- Send Email Checkbox -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 7: EMAIL INVITATION & SUBMIT -->
+<!-- Maps to: Send reader invitation email with NDA -->
+<!-- ========================================== -->
                 <div class="checkbox-wrapper">
                     <input
                         type="checkbox"
@@ -621,7 +671,6 @@
                     </label>
                 </div>
 
-                <!-- Register Button -->
                 <button
                     type="submit"
                     id="registerBtn"
@@ -631,7 +680,6 @@
                     ✅ Register Reader & Send Email
                 </button>
 
-                <!-- Footer -->
                 <div class="form-footer">
                     <p>Reader will receive email invitation to access readers.qolae.com</p>
                     <p>They will complete 2FA authentication and sign the NDA before accessing reports.</p>
@@ -640,10 +688,11 @@
         </div>
     </div>
 
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 8: JAVASCRIPT - FORM STATE MANAGEMENT -->
+<!-- ========================================== -->
     <script>
-        // ============================================
-        // LOCATION BLOCK A: FORM STATE MANAGEMENT
-        // ============================================
+        // ===== DOM ELEMENT REFERENCES =====
         const form = document.getElementById('readerRegistrationForm');
         const readerNameInput = document.getElementById('readerName');
         const emailInput = document.getElementById('email');
@@ -667,9 +716,7 @@
         let generatedPin = '';
         let isVerified = false;
 
-        // ============================================
-        // LOCATION BLOCK B: READER TYPE HANDLING
-        // ============================================
+        // ===== READER TYPE HANDLING =====
         readerTypeSelect.addEventListener('change', function() {
             const readerType = this.value;
 
@@ -697,9 +744,7 @@
             validateForm();
         });
 
-        // ============================================
-        // LOCATION BLOCK C: VERIFICATION LOGIC
-        // ============================================
+        // ===== VERIFICATION LOGIC =====
         registrationBodySelect.addEventListener('change', validateVerifyButton);
         registrationNumberInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase();
@@ -766,9 +811,7 @@
             }
         });
 
-        // ============================================
-        // LOCATION BLOCK D: FORM VALIDATION
-        // ============================================
+        // ===== FORM VALIDATION =====
         function validateForm() {
             const readerName = readerNameInput.value.trim();
             const email = emailInput.value.trim();
@@ -797,9 +840,7 @@
         readerTypeSelect.addEventListener('change', validateForm);
         specializationInput.addEventListener('input', validateForm);
 
-        // ============================================
-        // LOCATION BLOCK E: PIN GENERATION
-        // ============================================
+        // ===== PIN GENERATION =====
         generatePinBtn.addEventListener('click', async function() {
             const readerName = readerNameInput.value.trim();
 
@@ -836,9 +877,7 @@
             }
         });
 
-        // ============================================
-        // LOCATION BLOCK F: FORM SUBMISSION
-        // ============================================
+        // ===== FORM SUBMISSION =====
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -922,9 +961,7 @@
             }
         });
 
-        // ============================================
-        // LOCATION BLOCK G: INITIALIZATION
-        // ============================================
+        // ===== INITIALIZATION =====
         window.addEventListener('DOMContentLoaded', function() {
             validateForm();
             console.log('📖 Readers Registration Card initialized');

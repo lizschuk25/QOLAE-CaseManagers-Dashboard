@@ -3,7 +3,7 @@
 // ==============================================
 // Purpose: Main server for Case Managers Dashboard
 // Handles readers registration, report assignments, and payment approvals
-// Author: Liz & Claude
+// Author: Liz
 // Date: October 7, 2025
 // ==============================================
 

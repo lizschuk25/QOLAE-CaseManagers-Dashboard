@@ -1,10 +1,30 @@
+<!-- 
+  * QOLAE Case Managers Dashboard
+  * Secure workspace for Liz to manage cases, readers, and compliance
+  * Organized by Location Block Protocol
+  * Author: Liz
+  * Date: October 11, 2025
+  * 
+  * WORKFLOW STEPS (Mirrored in Location Blocks):
+  * 1. Case Assignment
+  * 2. Client Contact
+  * 3. Assessment (INA)
+  * 4. Report Writing
+  * 5. Review Process (Readers)
+  * 6. Readers Compliance Management (NEW HR Workflow)
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QOLAE Case Manager Dashboard</title>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 0: ALL CSS STYLES -->
+<!-- ========================================== -->
     <style>
+        /* ===== RESET & BASE STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -23,6 +43,7 @@
             margin: 0 auto;
         }
 
+        /* ===== HEADER CARD STYLES ===== */
         .header-card {
             background: white;
             border-radius: 20px;
@@ -85,6 +106,7 @@
             color: white;
         }
 
+        /* ===== WELCOME SECTION STYLES ===== */
         .welcome-section {
             border: 2px solid #e2e8f0;
             border-radius: 12px;
@@ -112,6 +134,7 @@
             color: #64748b;
         }
 
+        /* ===== PROGRESS SECTION STYLES ===== */
         .progress-section {
             background: white;
             border-radius: 20px;
@@ -187,6 +210,7 @@
             max-width: 100px;
         }
 
+        /* ===== WORKFLOW CARD STYLES ===== */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
@@ -245,6 +269,7 @@
             gap: 12px;
         }
 
+        /* ===== BUTTON STYLES ===== */
         .btn {
             padding: 12px 20px;
             border-radius: 10px;
@@ -284,6 +309,7 @@
             cursor: not-allowed;
         }
 
+        /* ===== STATUS BADGE STYLES ===== */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -310,6 +336,7 @@
             color: #6b7280;
         }
 
+        /* ===== FOOTER STYLES ===== */
         .footer {
             background: white;
             border-radius: 20px;
@@ -360,7 +387,7 @@
             text-decoration: underline;
         }
 
-        /* Modal styles */
+        /* ===== MODAL STYLES ===== */
         .modal {
             display: none;
             position: fixed;
@@ -408,6 +435,7 @@
             color: #64748b;
         }
 
+        /* ===== RESPONSIVE STYLES ===== */
         @media (max-width: 768px) {
             .container {
                 padding: 20px 10px;
@@ -440,7 +468,10 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 1: HEADER & WELCOME SECTION -->
+<!-- ========================================== -->
         <div class="header-card">
             <div class="badges">
                 <div class="badge secure">
@@ -465,7 +496,10 @@
             </div>
         </div>
 
-        <!-- Progress Section -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 2: 5-STEP WORKFLOW PROGRESS TRACKER -->
+<!-- Maps to: Case Assignment → Client Contact → Assessment → Report Writing → Review -->
+<!-- ========================================== -->
         <div class="progress-section">
             <h2 class="progress-title">Your Case Management Progress</h2>
             <div class="progress-bar">
@@ -492,9 +526,11 @@
             </div>
         </div>
 
-        <!-- Cards Grid -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 3: ACTIVE CASES CARD (WORKFLOW STEP 1) -->
+<!-- Maps to: Case assignment from Admin Dashboard -->
+<!-- ========================================== -->
         <div class="cards-grid">
-            <!-- Active Cases -->
             <div class="workflow-card" onclick="openModal('activeCasesModal')">
                 <div class="status-badge status-active">● 3 Active Cases</div>
                 <div class="card-header">
@@ -510,7 +546,10 @@
                 </div>
             </div>
 
-            <!-- Client Communications -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 4: CLIENT COMMUNICATIONS CARD (WORKFLOW STEP 2) -->
+<!-- Maps to: Contact clients for INA booking -->
+<!-- ========================================== -->
             <div class="workflow-card" onclick="openModal('clientCommModal')">
                 <div class="status-badge status-active">● 2 Pending Calls</div>
                 <div class="card-header">
@@ -526,7 +565,10 @@
                 </div>
             </div>
 
-            <!-- Assessment Scheduling -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 5: INA ASSESSMENTS CARD (WORKFLOW STEP 3) -->
+<!-- Maps to: Schedule and conduct home assessments -->
+<!-- ========================================== -->
             <div class="workflow-card" onclick="openModal('assessmentModal')">
                 <div class="status-badge status-pending">● 1 Scheduled</div>
                 <div class="card-header">
@@ -543,7 +585,10 @@
                 </div>
             </div>
 
-            <!-- Medical Records Access -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 6: MEDICAL RECORDS ACCESS CARD -->
+<!-- Maps to: Access client medical information with consent -->
+<!-- ========================================== -->
             <div class="workflow-card" onclick="openModal('medicalModal')">
                 <div class="status-badge status-locked">🔒 Consent Required</div>
                 <div class="card-header">
@@ -559,7 +604,10 @@
                 </div>
             </div>
 
-            <!-- Report Writing -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 7: REPORT WRITING CARD (WORKFLOW STEP 4) -->
+<!-- Maps to: Create INA reports -->
+<!-- ========================================== -->
             <div class="workflow-card" onclick="openModal('reportModal')">
                 <div class="status-badge status-pending">● 1 Draft</div>
                 <div class="card-header">
@@ -576,7 +624,10 @@
                 </div>
             </div>
 
-            <!-- Reader Management -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 8: READER MANAGEMENT CARD (WORKFLOW STEP 5) -->
+<!-- Maps to: 2-tier review process (Admin → Medical) -->
+<!-- ========================================== -->
             <div class="workflow-card" onclick="openModal('readerModal')">
                 <div class="status-badge status-active">● 24hr Deadline</div>
                 <div class="card-header">
@@ -594,7 +645,9 @@
             </div>
         </div>
 
-        <!-- Footer -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 9: SECURITY NOTICE & FOOTER -->
+<!-- ========================================== -->
         <div class="footer">
             <div class="security-notice">
                 ⚠️ <strong>Security Notice:</strong> All data is encrypted in transit and at rest. This system is GDPR compliant and maintains strict audit trails for all actions.
@@ -610,7 +663,11 @@
         </div>
     </div>
 
-    <!-- Modals -->
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 10: MODALS - CASE MANAGEMENT INTERACTIONS -->
+<!-- ========================================== -->
+    
+    <!-- Modal: Active Cases -->
     <div id="activeCasesModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -639,6 +696,7 @@
         </div>
     </div>
 
+    <!-- Modal: Client Communications -->
     <div id="clientCommModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -661,6 +719,7 @@
         </div>
     </div>
 
+    <!-- Modal: INA Assessment -->
     <div id="assessmentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -684,6 +743,7 @@
         </div>
     </div>
 
+    <!-- Modal: Medical Records -->
     <div id="medicalModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -705,6 +765,7 @@
         </div>
     </div>
 
+    <!-- Modal: Report Writing -->
     <div id="reportModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -728,6 +789,7 @@
         </div>
     </div>
 
+    <!-- Modal: Reader Review System -->
     <div id="readerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -755,7 +817,11 @@
         </div>
     </div>
 
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 11: JAVASCRIPT - MODAL & WORKFLOW LOGIC -->
+<!-- ========================================== -->
     <script>
+        // ===== MODAL MANAGEMENT =====
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'block';
             document.body.style.overflow = 'hidden';
@@ -777,9 +843,9 @@
             });
         });
 
-        // Add some dynamic updates to simulate real workflow
+        // ===== WORKFLOW PROGRESS SIMULATION =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Simulate progress updates
+            // Simulate progress updates (for demo purposes)
             setTimeout(() => {
                 const activeStep = document.querySelector('.step-circle.active');
                 if (activeStep) {

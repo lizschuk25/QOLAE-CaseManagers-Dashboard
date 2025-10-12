@@ -2,11 +2,11 @@
   "name": "qolae-case-managers-dashboard",
   "version": "1.0.0",
   "description": "QOLAE Case Managers Dashboard - Readers Registration & Report Management",
-  "main": "server.js",
+  "main": "cm_server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
+    "start": "node cm_server.js",
+    "dev": "node --watch cm_server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
