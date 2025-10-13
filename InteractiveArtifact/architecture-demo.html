@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CM Dashboard Architecture Options - Interactive Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .demo-header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .demo-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .demo-subtitle {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .option-selector {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            padding: 12px 24px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-btn.active {
+            border-color: #3b82f6;
+            background: #3b82f6;
+            color: white;
+        }
+
+        .demo-preview {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-height: 700px;
+        }
+
+        .option-view {
+            display: none;
+        }
+
+        .option-view.active {
+            display: block;
+        }
+
+        /* OPTION A: TAB-BASED STYLE */
+        .tabs-demo {
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 8px;
+            padding: 0 20px;
+            background: #f8fafc;
+        }
+
+        .tab-item {
+            padding: 16px 20px;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .tab-item:hover {
+            color: #3b82f6;
+        }
+
+        .tab-item.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content {
+            padding: 30px;
+        }
+
+        .workspace-panel {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 24px;
+            min-height: 500px;
+        }
+
+        .workspace-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .workspace-meta {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        .section-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .section-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 16px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .section-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-family: inherit;
+            min-height: 80px;
+        }
+
+        /* OPTION B: INLINE EXPANDABLE STYLE */
+        .cases-list {
+            padding: 20px;
+        }
+
+        .case-row {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .case-row-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .case-row-header:hover {
+            background: #f8fafc;
+        }
+
+        .case-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .case-id {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .expand-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .case-details {
+            display: none;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .case-details.expanded {
+            display: block;
+        }
+
+        .detail-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 16px 20px 0 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .detail-tab {
+            padding: 10px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .detail-tab:hover {
+            color: #1e293b;
+        }
+
+        .detail-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .detail-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .detail-content.active {
+            display: block;
+        }
+
+        /* OPTION C: MODAL OVERLAY STYLE */
+        .modal-trigger-section {
+            padding: 30px;
+        }
+
+        .modal-trigger-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+
+        .modal-trigger-btn:hover {
+            background: #2563eb;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-list li {
+            padding: 4px 0;
+            color: #1e40af;
+        }
+
+        .info-list li:before {
+            content: "✓ ";
+            color: #22c55e;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .pros, .cons {
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .pros {
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+        }
+
+        .cons {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+        }
+
+        .pros h4 {
+            color: #166534;
+            margin-bottom: 8px;
+        }
+
+        .cons h4 {
+            color: #991b1b;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">🏗️ Case Managers Dashboard Architecture Options</h1>
+            <p class="demo-subtitle">Interactive demo showing 3 different approaches for Research Workspace & Report Editor integration</p>
+
+            <div class="option-selector">
+                <button class="option-btn active" onclick="showOption('option-a')">
+                    Option A: Tab-Based Workspaces
+                </button>
+                <button class="option-btn" onclick="showOption('option-b')">
+                    Option B: Inline Expandable
+                </button>
+                <button class="option-btn" onclick="showOption('option-c')">
+                    Option C: Modal Overlay (Current)
+                </button>
+            </div>
+        </div>
+
+        <!-- OPTION A: TAB-BASED -->
+        <div id="option-a" class="demo-preview option-view active">
+            <div class="tabs-demo">
+                <div class="tab-item active" onclick="switchTabDemo('cases')">📋 My Cases</div>
+                <div class="tab-item" onclick="switchTabDemo('research')">📚 Research (INA-001)</div>
+                <div class="tab-item" onclick="switchTabDemo('report')">✍️ Report (INA-001)</div>
+                <div class="tab-item" onclick="switchTabDemo('readers')">👥 Reader Management</div>
+            </div>
+
+            <div class="tab-content" id="tab-cases">
+                <h2>My Cases</h2>
+                <p style="color: #64748b; margin-top: 8px;">Click "Research" or "Report" tabs above to see dedicated workspaces</p>
+
+                <div style="margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">INA-2024-001 | Michael Chen</div>
+                    <div style="font-size: 14px; color: #64748b;">Stage 7: R&D Phase (50%)</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-research" style="display: none;">
+                <div class="workspace-panel">
+                    <div class="workspace-header">📚 Research Workspace - INA-2024-001</div>
+                    <div class="workspace-meta">Case: Michael Chen | Stage 7: R&D Phase</div>
+
+                    <div class="section-grid">
+                        <div class="section-card">
+                            <div class="section-title">Section 1: Medical Conditions</div>
+                            <textarea class="section-input" placeholder="Add medical conditions...">Multiple Sclerosis (progressive)</textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 2: Equipment Research</div>
+                            <textarea class="section-input" placeholder="Track equipment needs..."></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 3: Research Notes</div>
+                            <textarea class="section-input" placeholder="Document your research..." style="min-height: 150px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-title">✅ Why This Works:</div>
+                        <ul class="info-list">
+                            <li>Dedicated full tab for focused research work</li>
+                            <li>Easy to switch between cases using tab switching</li>
+                            <li>Can have multiple case workspaces open (Research INA-001, Report INA-002)</li>
+                            <li>Dashboard context remains accessible via "My Cases" tab</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-report" style="display: none;">
+                <div class="workspace-panel">
+                    <div class="workspace-header">✍️ Report Editor - INA-2024-001</div>
+                    <div class="workspace-meta">Case: Michael Chen | Stage 8: Report Writing | Word Count: 0 / ~5,000</div>
+
+                    <div class="section-grid">
+                        <div class="section-card">
+                            <div class="section-title">Section 1: Executive Summary</div>
+                            <textarea class="section-input" placeholder="250-500 words..."></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 2: Medical Background</div>
+                            <textarea class="section-input" placeholder="Document medical history..."></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 3: Home Environment Assessment</div>
+                            <textarea class="section-input" placeholder="Assess living situation..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-title">✅ Why This Works:</div>
+                        <ul class="info-list">
+                            <li>Full screen space for 5,000-word document writing</li>
+                            <li>Separate tab for each case's report (Report INA-001, Report INA-002)</li>
+                            <li>Can reference Research tab while writing report</li>
+                            <li>Clean workspace separation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-readers" style="display: none;">
+                <h2>Reader Management</h2>
+                <p style="color: #64748b; margin-top: 8px;">Other dashboard tabs work as normal</p>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ Pros:</h4>
+                    <ul class="info-list">
+                        <li>Maximum workspace real estate</li>
+                        <li>Multiple cases can have open workspaces simultaneously</li>
+                        <li>Easy tab switching between Research and Report</li>
+                        <li>Clear separation of different work contexts</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>❌ Cons:</h4>
+                    <ul class="info-list" style="list-style: none;">
+                        <li style="color: #991b1b;">⚠️ Tab bar can get crowded with multiple cases</li>
+                        <li style="color: #991b1b;">⚠️ Can't see case details while in workspace</li>
+                        <li style="color: #991b1b;">⚠️ Different pattern than Lawyers Dashboard</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPTION B: INLINE EXPANDABLE -->
+        <div id="option-b" class="demo-preview option-view">
+            <div class="tabs-demo">
+                <div class="tab-item active">📋 My Cases</div>
+                <div class="tab-item">👥 Reader Management</div>
+                <div class="tab-item">💰 Approval Queue</div>
+            </div>
+
+            <div class="cases-list">
+                <div class="case-row">
+                    <div class="case-row-header" onclick="toggleCase('case1')">
+                        <div class="case-info">
+                            <span class="case-id">INA-2024-001</span>
+                            <span style="color: #64748b;">Michael Chen</span>
+                            <span style="color: #64748b;">Stage 7: R&D Phase</span>
+                        </div>
+                        <button class="expand-btn" id="expand-case1">Expand +</button>
+                    </div>
+
+                    <div class="case-details" id="case1-details">
+                        <div class="detail-tabs">
+                            <button class="detail-tab active" onclick="switchDetailTab('case1', 'timeline')">Timeline</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case1', 'research')">📚 Research</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case1', 'report')">✍️ Report</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case1', 'documents')">Documents</button>
+                        </div>
+
+                        <div class="detail-content active" id="case1-timeline">
+                            <h3>Timeline</h3>
+                            <p style="color: #64748b;">Workflow events and history...</p>
+                        </div>
+
+                        <div class="detail-content" id="case1-research">
+                            <div class="workspace-panel">
+                                <div class="workspace-header">📚 Research Workspace</div>
+                                <div class="workspace-meta">Inline workspace within case details</div>
+
+                                <div class="section-grid">
+                                    <div class="section-card">
+                                        <div class="section-title">Medical Conditions</div>
+                                        <textarea class="section-input" placeholder="Add conditions..." style="min-height: 60px;"></textarea>
+                                    </div>
+                                    <div class="section-card">
+                                        <div class="section-title">Equipment Research</div>
+                                        <textarea class="section-input" placeholder="Track equipment..." style="min-height: 60px;"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <div class="info-title">✅ Why This Works:</div>
+                                    <ul class="info-list">
+                                        <li>Research workspace stays in context of the specific case</li>
+                                        <li>Can see case details while working on research</li>
+                                        <li>No need to switch tabs or open modals</li>
+                                        <li>Natural flow: expand case → work on section</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-content" id="case1-report">
+                            <div class="workspace-panel">
+                                <div class="workspace-header">✍️ Report Editor</div>
+                                <div class="workspace-meta">7 sections for comprehensive INA report</div>
+
+                                <div class="section-grid">
+                                    <div class="section-card">
+                                        <div class="section-title">1. Executive Summary</div>
+                                        <textarea class="section-input" placeholder="250-500 words..." style="min-height: 80px;"></textarea>
+                                    </div>
+                                    <div class="section-card">
+                                        <div class="section-title">2. Medical Background</div>
+                                        <textarea class="section-input" placeholder="Document history..." style="min-height: 80px;"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <div class="info-title">✅ Why This Works:</div>
+                                    <ul class="info-list">
+                                        <li>Report editor embedded within case context</li>
+                                        <li>Scroll through all 7 sections vertically</li>
+                                        <li>Reference other tabs (Timeline, Documents) easily</li>
+                                        <li>Keeps everything in one continuous flow</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-content" id="case1-documents">
+                            <h3>Documents</h3>
+                            <p style="color: #64748b;">Document library...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="case-row">
+                    <div class="case-row-header">
+                        <div class="case-info">
+                            <span class="case-id">INA-2024-002</span>
+                            <span style="color: #64748b;">Sarah Johnson</span>
+                            <span style="color: #64748b;">Stage 2: Client Contacted</span>
+                        </div>
+                        <button class="expand-btn">Expand +</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>✅ Pros:</h4>
+                    <ul class="info-list">
+                        <li>Research and Report stay in context of specific case</li>
+                        <li>Can reference other case sections while working</li>
+                        <li>No modal/tab switching required</li>
+                        <li>Natural expandable flow (like current case details)</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>❌ Cons:</h4>
+                    <ul class="info-list" style="list-style: none;">
+                        <li style="color: #991b1b;">⚠️ Limited vertical space for long documents (5,000 words)</li>
+                        <li style="color: #991b1b;">⚠️ Lots of scrolling for complex workspaces</li>
+                        <li style="color: #991b1b;">⚠️ Can only work on one case at a time</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPTION C: MODAL OVERLAY -->
+        <div id="option-c" class="demo-preview option-view">
+            <div class="tabs-demo">
+                <div class="tab-item active">📋 My Cases</div>
+                <div class="tab-item">👥 Reader Management</div>
+                <div class="tab-item">💰 Approval Queue</div>
+            </div>
+
+            <div class="modal-trigger-section">
+                <h2 style="margin-bottom: 16px;">My Cases - INA-2024-001 (Expanded)</h2>
+                <p style="color: #64748b; margin-bottom: 24px;">Click buttons below to open full-screen modal workspaces:</p>
+
+                <button class="modal-trigger-btn" onclick="openModal('research')">
+                    📚 Open Research Workspace
+                </button>
+                <button class="modal-trigger-btn" onclick="openModal('report')">
+                    ✍️ Open Report Editor
+                </button>
+
+                <div class="info-box">
+                    <div class="info-title">ℹ️ How This Works:</div>
+                    <ul class="info-list">
+                        <li>Click button → Full-screen modal overlay covers entire dashboard</li>
+                        <li>Modal content: 920+ lines (Research) or 930+ lines (Report)</li>
+                        <li>Close modal → Return to dashboard</li>
+                        <li>Similar to Readers Dashboard in-workspace pattern</li>
+                    </ul>
+                </div>
+
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>✅ Pros:</h4>
+                        <ul class="info-list">
+                            <li>Maximum screen real estate (full viewport)</li>
+                            <li>Clear focus - no dashboard distractions</li>
+                            <li>Similar pattern to Readers Dashboard</li>
+                            <li>Works well for complex multi-section work</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>❌ Cons:</h4>
+                        <ul class="info-list" style="list-style: none;">
+                            <li style="color: #991b1b;">⚠️ Different pattern than Lawyers Dashboard modal cards</li>
+                            <li style="color: #991b1b;">⚠️ Can't see dashboard context while working</li>
+                            <li style="color: #991b1b;">⚠️ Must close modal to access other cases</li>
+                            <li style="color: #991b1b;">⚠️ Can feel "trapped" in modal for long sessions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Demo -->
+        <div class="modal-overlay" id="modal-research">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">📚 Research Workspace - INA-2024-001</div>
+                    <button class="modal-close" onclick="closeModal('research')">Close ✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="section-grid">
+                        <div class="section-card">
+                            <div class="section-title">Section 1: Medical Conditions</div>
+                            <textarea class="section-input" placeholder="Add medical conditions..." style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 2: Equipment Research</div>
+                            <textarea class="section-input" placeholder="Track equipment..." style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 3: Case Law & Guidelines</div>
+                            <textarea class="section-input" placeholder="NICE guidelines..." style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 4: Research Notes</div>
+                            <textarea class="section-input" placeholder="Document findings..." style="min-height: 200px;"></textarea>
+                        </div>
+                    </div>
+                    <p style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 6px; color: #64748b;">
+                        This is a full-screen overlay modal. Dashboard is completely hidden behind this modal.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modal-report">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">✍️ Report Editor - INA-2024-001</div>
+                    <button class="modal-close" onclick="closeModal('report')">Close ✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="section-grid">
+                        <div class="section-card">
+                            <div class="section-title">Section 1: Executive Summary</div>
+                            <textarea class="section-input" placeholder="250-500 words..." style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 2: Medical Background</div>
+                            <textarea class="section-input" placeholder="Document history..." style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">Section 3: Home Environment</div>
+                            <textarea class="section-input" placeholder="Assess living situation..." style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="section-card">
+                            <div class="section-title">All 7 Sections...</div>
+                            <p style="color: #64748b;">Full report editor with 7 sections, formatting toolbar, auto-save, etc.</p>
+                        </div>
+                    </div>
+                    <p style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 6px; color: #64748b;">
+                        This is a full-screen overlay modal. Dashboard is completely hidden behind this modal.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Option switching
+        function showOption(optionId) {
+            // Update buttons
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update views
+            document.querySelectorAll('.option-view').forEach(view => view.classList.remove('active'));
+            document.getElementById(optionId).classList.add('active');
+        }
+
+        // Option A: Tab switching
+        function switchTabDemo(tabName) {
+            document.querySelectorAll('.tabs-demo .tab-item').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            const targetTab = document.getElementById('tab-' + tabName);
+            if (targetTab) {
+                targetTab.style.display = 'block';
+            }
+        }
+
+        // Option B: Case expansion
+        function toggleCase(caseId) {
+            const details = document.getElementById(caseId + '-details');
+            const btn = document.getElementById('expand-' + caseId);
+
+            if (details.classList.contains('expanded')) {
+                details.classList.remove('expanded');
+                btn.textContent = 'Expand +';
+            } else {
+                details.classList.add('expanded');
+                btn.textContent = 'Collapse −';
+            }
+        }
+
+        function switchDetailTab(caseId, tabName) {
+            const container = document.getElementById(caseId + '-details');
+
+            container.querySelectorAll('.detail-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            container.querySelectorAll('.detail-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            document.getElementById(caseId + '-' + tabName).classList.add('active');
+        }
+
+        // Option C: Modal handling
+        function openModal(modalType) {
+            document.getElementById('modal-' + modalType).classList.add('show');
+        }
+
+        function closeModal(modalType) {
+            document.getElementById('modal-' + modalType).classList.remove('show');
+        }
+    </script>
+</body>
+</html>

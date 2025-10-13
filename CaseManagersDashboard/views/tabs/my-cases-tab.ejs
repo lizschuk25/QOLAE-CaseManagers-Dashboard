@@ -1,0 +1,1551 @@
+<!-- ========================================== -->
+<!-- MY CASES TAB - ENHANCED (CHILD COMPONENT) -->
+<!-- Complete 14-stage workflow with 3 view modes -->
+<!-- Used by: Both Management (Liz) and Contractor CMs -->
+<!-- Author: Liz & Claude -->
+<!-- Date: October 12, 2025 -->
+<!-- Features: Compact/Detailed/Kanban views, Priority algorithm, -->
+<!--           7-section expandable details, Workflow gates -->
+<!-- ========================================== -->
+
+<!-- LOCATION BLOCK A: TAB-SPECIFIC CSS -->
+<style>
+    /* ===== CONTENT HEADER ===== */
+    .content {
+        padding: 30px 40px;
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .content-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .content-count {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    /* ===== VIEW TOGGLE SYSTEM ===== */
+    .view-toggle {
+        display: flex;
+        gap: 4px;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 8px;
+    }
+
+    .view-btn {
+        padding: 8px 16px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .view-btn:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .view-btn.active {
+        background: white;
+        color: #3b82f6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-active-notice {
+        display: none;
+        background: #eff6ff;
+        border: 1px solid #3b82f6;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #1e40af;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-active-notice.show {
+        display: flex;
+    }
+
+    .clear-filter-btn {
+        background: white;
+        border: 1px solid #3b82f6;
+        color: #3b82f6;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .clear-filter-btn:hover {
+        background: #3b82f6;
+        color: white;
+    }
+
+    /* ===== COMPACT VIEW (TABLE) ===== */
+    .cases-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .cases-table thead {
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cases-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .cases-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s ease;
+    }
+
+    .cases-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .cases-table td {
+        padding: 16px;
+        font-size: 14px;
+    }
+
+    .case-id {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    /* ===== PRIORITY INDICATORS ===== */
+    .priority-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+
+    .priority-urgent { background: #ef4444; }
+    .priority-attention { background: #eab308; }
+    .priority-on-track { background: #22c55e; }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        min-width: 120px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+        transition: width 0.3s ease;
+    }
+
+    .progress-percent {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1e293b;
+        min-width: 35px;
+    }
+
+    .progress-stage {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    /* ===== WORKFLOW STAGES ===== */
+    .workflow-stages {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .stage-icon {
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .stage-completed { filter: none; opacity: 1; }
+    .stage-current { filter: none; opacity: 1; animation: pulse 2s infinite; }
+    .stage-upcoming { filter: grayscale(1); opacity: 0.3; }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .next-stage-indicator {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #3b82f6;
+        font-weight: 500;
+    }
+
+    /* ===== DETAILED VIEW ===== */
+    .detailed-view-container {
+        display: none;
+    }
+
+    .detailed-view-container.active {
+        display: block;
+    }
+
+    .case-card-detailed {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .case-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .case-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .case-card-meta {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    /* ===== KANBAN VIEW ===== */
+    .kanban-view-container {
+        display: none;
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .kanban-view-container.active {
+        display: flex;
+    }
+
+    .kanban-column {
+        flex: 1;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 16px;
+        min-height: 400px;
+    }
+
+    .kanban-column-header {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .kanban-column-count {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 16px;
+    }
+
+    .kanban-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 12px;
+        cursor: move;
+        transition: all 0.2s ease;
+    }
+
+    .kanban-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .kanban-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .kanban-card-meta {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    /* ===== EXPANDED CASE DETAILS (7 SECTIONS) ===== */
+    .case-details-row {
+        display: none;
+    }
+
+    .case-details-row.show {
+        display: table-row;
+    }
+
+    .case-details-cell {
+        padding: 0 !important;
+        background: #f8fafc;
+    }
+
+    .case-details {
+        padding: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .details-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0;
+    }
+
+    .detail-tab {
+        padding: 10px 16px;
+        border: none;
+        background: none;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+    }
+
+    .detail-tab:hover {
+        color: #1e293b;
+    }
+
+    .detail-tab.active {
+        color: #3b82f6;
+        border-bottom-color: #3b82f6;
+    }
+
+    .detail-section {
+        display: none;
+    }
+
+    .detail-section.active {
+        display: block;
+    }
+
+    .details-section {
+        background: white;
+        padding: 16px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 16px;
+    }
+
+    .details-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #1e293b;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+
+    .timeline-icon {
+        color: #22c55e;
+        font-size: 16px;
+        margin-top: 2px;
+    }
+
+    .timeline-icon.pending {
+        color: #cbd5e1;
+    }
+
+    .timeline-text {
+        color: #64748b;
+        flex: 1;
+    }
+
+    .timeline-text strong {
+        color: #1e293b;
+    }
+
+    /* ===== R&D TRACKER ===== */
+    .rd-checklist {
+        list-style: none;
+        padding: 0;
+    }
+
+    .rd-item {
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .rd-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .rd-label {
+        flex: 1;
+        font-size: 14px;
+        color: #1e293b;
+    }
+
+    .rd-status {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .rd-status.complete {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .rd-status.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    /* ===== REPORT WRITING STATUS ===== */
+    .report-progress {
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+    }
+
+    .word-count {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .word-count-label {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .section-checklist {
+        list-style: none;
+        padding: 0;
+        margin-top: 16px;
+    }
+
+    .section-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .section-item:last-child {
+        border-bottom: none;
+    }
+
+    /* ===== WORKFLOW GATES ===== */
+    .gate-lock {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    /* ===== QUICK ACTIONS ===== */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+    .action-btn:hover {
+        background: #f8fafc;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    .action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ===== EXPAND BUTTON ===== */
+    .expand-btn {
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .expand-btn:hover {
+        background: #f1f5f9;
+        color: #3b82f6;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+        font-size: 14px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .content {
+            padding: 20px;
+        }
+
+        .kanban-view-container {
+            flex-direction: column;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .view-toggle {
+            width: 100%;
+        }
+    }
+</style>
+
+<!-- LOCATION BLOCK B: CONTENT HEADER -->
+<div class="content">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title">My Cases</h2>
+            <p class="content-count" id="caseCount">2 cases shown</p>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="view-btn active" id="compactViewBtn" onclick="switchView('compact')">
+                Compact
+            </button>
+            <button class="view-btn" id="detailedViewBtn" onclick="switchView('detailed')">
+                Detailed
+            </button>
+            <button class="view-btn" id="kanbanViewBtn" onclick="switchView('kanban')">
+                Kanban
+            </button>
+        </div>
+
+        <div class="filter-active-notice" id="filterNotice">
+            <span>Filtering by: <strong id="filterType"></strong></span>
+            <button class="clear-filter-btn" onclick="clearCaseFilter()">Clear filter</button>
+        </div>
+    </div>
+
+<!-- LOCATION BLOCK C: COMPACT VIEW (TABLE) -->
+    <table class="cases-table" id="compactView">
+        <thead>
+            <tr>
+                <th>Case ID</th>
+                <th>Client</th>
+                <th>CM</th>
+                <th>Progress</th>
+                <th>Consent</th>
+                <th>Action</th>
+                <th>Days</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="casesTableBody">
+            <!-- Cases will be dynamically loaded from API -->
+        </tbody>
+                <td colspan="8" class="case-details-cell">
+                    <div class="case-details">
+                        <!-- 7-Section Tabs -->
+                        <div class="details-tabs">
+                            <button class="detail-tab active" onclick="switchDetailTab('case-1', 'timeline')">Timeline</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-1', 'rd')">R&D</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-1', 'report')">Report</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-1', 'documents')">Documents</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-1', 'readers')">Readers</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-1', 'ina')">INA Visit</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-1', 'actions')">Actions</button>
+                        </div>
+
+                        <!-- Section 1: Timeline -->
+                        <div class="detail-section active" id="case-1-timeline">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Workflow Timeline</h3>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Oct 10:</strong> Report writing completed</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Oct 3:</strong> R&D phase completed</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Sep 28:</strong> INA visit completed</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Sep 25:</strong> INA visit scheduled</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Sep 20:</strong> Consent received</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Sep 18:</strong> Consent sent</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Sep 15:</strong> Client contacted</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Sep 12:</strong> Case opened</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: R&D Tracker -->
+                        <div class="detail-section" id="case-1-rd">
+                            <div class="details-section">
+                                <h3 class="details-section-title">R&D Tracker</h3>
+                                <ul class="rd-checklist">
+                                    <li class="rd-item">
+                                        <input type="checkbox" class="rd-checkbox" checked disabled>
+                                        <span class="rd-label">Multiple Sclerosis (progressive)</span>
+                                        <span class="rd-status complete">Complete</span>
+                                    </li>
+                                    <li class="rd-item">
+                                        <input type="checkbox" class="rd-checkbox" checked disabled>
+                                        <span class="rd-label">Mobility equipment research (wheelchair, hoist)</span>
+                                        <span class="rd-status complete">Complete</span>
+                                    </li>
+                                    <li class="rd-item">
+                                        <input type="checkbox" class="rd-checkbox" checked disabled>
+                                        <span class="rd-label">NICE guidelines reviewed</span>
+                                        <span class="rd-status complete">Complete</span>
+                                    </li>
+                                </ul>
+                                <p style="margin-top: 12px; font-size: 13px; color: #64748b;">
+                                    R&D completed on Oct 3, 2025 (7 days)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Report Writing Status -->
+                        <div class="detail-section" id="case-1-report">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Report Writing Status</h3>
+                                <div class="report-progress">
+                                    <div class="word-count">4,847 words</div>
+                                    <div class="word-count-label">Estimated 5,000 words</div>
+                                </div>
+                                <ul class="section-checklist">
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Executive Summary</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Medical Background</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Home Environment Assessment</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Equipment Needs</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Care Package Design</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Recommendations</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                    <li class="section-item">
+                                        <input type="checkbox" checked disabled>
+                                        <span>Appendices</span>
+                                        <span style="margin-left: auto; color: #22c55e;">✓</span>
+                                    </li>
+                                </ul>
+                                <p style="margin-top: 12px; font-size: 13px; color: #64748b;">
+                                    Last auto-saved: Oct 10, 2025 at 4:32 PM
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Documents -->
+                        <div class="detail-section" id="case-1-documents">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Document Library</h3>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; justify-content: space-between; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                        <span>📄 Consent Form (signed)</span>
+                                        <button class="action-btn" style="padding: 4px 12px;">View</button>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                        <span>📋 Medical Notes (342 pages)</span>
+                                        <button class="action-btn" style="padding: 4px 12px;">View</button>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                                        <span>📝 INA Report (Draft v3)</span>
+                                        <button class="action-btn" style="padding: 4px 12px;">View</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 5: Readers -->
+                        <div class="detail-section" id="case-1-readers">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Reader Assignments</h3>
+                                <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+                                    <span class="gate-lock">🔒 Locked until internal review complete</span>
+                                </p>
+                                <div style="padding: 12px; background: #f8fafc; border-radius: 6px;">
+                                    <div style="font-weight: 600; margin-bottom: 4px;">1st Reader</div>
+                                    <div style="font-size: 13px; color: #64748b;">Not yet assigned</div>
+                                </div>
+                                <div style="padding: 12px; background: #f8fafc; border-radius: 6px; margin-top: 8px;">
+                                    <div style="font-weight: 600; margin-bottom: 4px;">2nd Reader</div>
+                                    <div style="font-size: 13px; color: #64748b;">Not yet assigned</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 6: INA Visit -->
+                        <div class="detail-section" id="case-1-ina">
+                            <div class="details-section">
+                                <h3 class="details-section-title">INA Visit Details</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div>
+                                        <div style="font-size: 12px; color: #64748b;">Date</div>
+                                        <div style="font-weight: 600;">Sep 28, 2025</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; color: #64748b;">Duration</div>
+                                        <div style="font-weight: 600;">2.5 hours</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; color: #64748b;">Location</div>
+                                        <div style="font-weight: 600;">Client's home</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; color: #64748b;">Media Collected</div>
+                                        <div style="font-weight: 600;">47 photos, 2 videos</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px;">
+                                    <button class="action-btn">View INA Form</button>
+                                    <button class="action-btn" style="margin-left: 8px;">View Media</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 7: Quick Actions -->
+                        <div class="detail-section" id="case-1-actions">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Quick Actions</h3>
+                                <div class="quick-actions">
+                                    <button class="action-btn">📞 Contact Client</button>
+                                    <button class="action-btn">📧 Email Lawyer</button>
+                                    <button class="action-btn" disabled>👤 Assign 1st Reader</button>
+                                    <button class="action-btn">📄 View Report</button>
+                                    <button class="action-btn">🗓️ Schedule Follow-up</button>
+                                    <button class="action-btn">💬 Add Note</button>
+                                    <button class="action-btn">📚 R&D Workspace</button>
+                                    <button class="action-btn">✅ Mark Stage Complete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Case 2: Stage 2 - Client Contacted -->
+            <tr data-case-id="case-2" data-priority="urgent" data-stage="2" style="display: none;">
+                <td>
+                    <span class="priority-dot priority-urgent" title="Urgent - overdue"></span>
+                    <span class="case-id">INA-2024-003</span>
+                </td>
+                <td>Sarah Johnson</td>
+                <td>Emma</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 14%"></div>
+                        </div>
+                        <span class="progress-percent">14%</span>
+                    </div>
+                    <div class="progress-stage">Stage 2: Client Contacted</div>
+                </td>
+                <td>🔒 Pending</td>
+                <td>Send consent form</td>
+                <td>7 days</td>
+                <td>
+                    <button class="expand-btn" onclick="toggleCaseDetails('case-2')">+</button>
+                </td>
+            </tr>
+            <tr class="case-details-row" id="case-2-details">
+                <td colspan="8" class="case-details-cell">
+                    <div class="case-details">
+                        <div class="details-tabs">
+                            <button class="detail-tab active" onclick="switchDetailTab('case-2', 'timeline')">Timeline</button>
+                            <button class="detail-tab" onclick="switchDetailTab('case-2', 'actions')">Actions</button>
+                        </div>
+
+                        <div class="detail-section active" id="case-2-timeline">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Workflow Timeline</h3>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Oct 5:</strong> Client contacted</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">✅</span>
+                                    <span class="timeline-text"><strong>Oct 1:</strong> Case opened</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section" id="case-2-actions">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Quick Actions</h3>
+                                <div class="quick-actions">
+                                    <button class="action-btn">📞 Contact Client</button>
+                                    <button class="action-btn">📧 Send Consent Form</button>
+                                    <button class="action-btn">💬 Add Note</button>
+                                    <button class="action-btn">✅ Mark Stage Complete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+<!-- LOCATION BLOCK D: DETAILED VIEW -->
+    <div class="detailed-view-container" id="detailedView">
+        <div class="case-card-detailed">
+            <div class="case-card-header">
+                <div>
+                    <div class="case-card-title">
+                        <span class="priority-dot priority-on-track"></span>
+                        INA-2024-002 | Michael Chen
+                    </div>
+                    <div class="case-card-meta">Assigned to: Rachel | Opened: Sep 12, 2025</div>
+                </div>
+                <button class="action-btn">View Full Details</button>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                    Stage 9/14: Internal Review (64%)
+                </div>
+                <div class="workflow-stages">
+                    <span class="stage-icon stage-completed" title="Stage 1: Case Opened">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 2: Client Contacted">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 3: Consent Sent">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 4: Consent Received">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 5: INA Scheduled">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 6: INA Completed">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 7: R&D">✅</span>
+                    <span class="stage-icon stage-completed" title="Stage 8: Writing">✅</span>
+                    <span class="stage-icon stage-current" title="Stage 9: Review">🔍</span>
+                    <span class="stage-icon stage-upcoming" title="Stage 10: 1st Reader">⏳</span>
+                    <span class="stage-icon stage-upcoming" title="Stage 11: Corrections">⏳</span>
+                    <span class="stage-icon stage-upcoming" title="Stage 12: 2nd Reader">⏳</span>
+                    <span class="stage-icon stage-upcoming" title="Stage 13: Final">⏳</span>
+                    <span class="stage-icon stage-upcoming" title="Stage 14: Closure">⏳</span>
+                </div>
+                <div class="next-stage-indicator">
+                    NEXT: Complete internal review → Assign 1st reader
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <button class="action-btn">📄 View Report</button>
+                <button class="action-btn">📞 Contact Client</button>
+                <button class="action-btn">📧 Email Lawyer</button>
+                <button class="action-btn">✅ Mark Complete</button>
+            </div>
+        </div>
+    </div>
+
+<!-- LOCATION BLOCK E: KANBAN VIEW -->
+    <div class="kanban-view-container" id="kanbanView">
+        <div class="kanban-column">
+            <div class="kanban-column-header">📚 R&D Phase</div>
+            <div class="kanban-column-count">0 cases</div>
+        </div>
+
+        <div class="kanban-column">
+            <div class="kanban-column-header">✍️ Report Writing</div>
+            <div class="kanban-column-count">0 cases</div>
+        </div>
+
+        <div class="kanban-column">
+            <div class="kanban-column-header">🔍 Internal Review</div>
+            <div class="kanban-column-count">1 case</div>
+            <div class="kanban-card" draggable="true">
+                <div class="kanban-card-title">INA-2024-002</div>
+                <div class="kanban-card-meta">Michael Chen | Rachel</div>
+                <div style="margin-top: 8px; font-size: 12px; color: #22c55e;">
+                    ✅ On track (2 days)
+                </div>
+            </div>
+        </div>
+
+        <div class="kanban-column">
+            <div class="kanban-column-header">👥 With Readers</div>
+            <div class="kanban-column-count">0 cases</div>
+        </div>
+
+        <div class="kanban-column">
+            <div class="kanban-column-header">✅ Case Closure</div>
+            <div class="kanban-column-count">0 cases</div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-title">No cases found</div>
+        <div class="empty-state-text">Try adjusting your filter or check back later.</div>
+    </div>
+</div>
+
+<!-- LOCATION BLOCK F: JAVASCRIPT -->
+<script>
+    // ===== GLOBAL STATE =====
+    let currentView = 'compact'; // compact, detailed, kanban
+    let currentFilter = 'all'; // all, urgent, attention, on-track
+    let allCases = []; // Store fetched cases
+
+    // ===== VIEW TOGGLE SYSTEM =====
+    function switchView(view) {
+        currentView = view;
+
+        // Update button states
+        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(view + 'ViewBtn').classList.add('active');
+
+        // Show/hide views
+        document.getElementById('compactView').style.display = view === 'compact' ? 'table' : 'none';
+        document.getElementById('detailedView').classList.toggle('active', view === 'detailed');
+        document.getElementById('kanbanView').classList.toggle('active', view === 'kanban');
+
+        // Save preference
+        localStorage.setItem('cmDashboardView', view);
+        console.log(`Switched to ${view} view`);
+    }
+
+    // ===== TOGGLE CASE DETAILS =====
+    function toggleCaseDetails(caseId) {
+        const detailsRow = document.getElementById(caseId + '-details');
+        const btn = event.target;
+
+        if (detailsRow.classList.contains('show')) {
+            detailsRow.classList.remove('show');
+            btn.textContent = '+';
+        } else {
+            // Close all other expanded cases
+            document.querySelectorAll('.case-details-row').forEach(row => {
+                row.classList.remove('show');
+            });
+            document.querySelectorAll('.expand-btn').forEach(button => {
+                button.textContent = '+';
+            });
+
+            // Open this case
+            detailsRow.classList.add('show');
+            btn.textContent = '−';
+        }
+    }
+
+    // ===== SWITCH DETAIL TAB =====
+    function switchDetailTab(caseId, tabName) {
+        // Update tab buttons
+        const container = document.getElementById(caseId + '-details');
+        container.querySelectorAll('.detail-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Show/hide sections
+        container.querySelectorAll('.detail-section').forEach(section => section.classList.remove('active'));
+        document.getElementById(caseId + '-' + tabName).classList.add('active');
+    }
+
+    // ===== FILTER LISTENER (FROM PARENT ACTION CENTER) =====
+    window.addEventListener('filterCases', function(event) {
+        const filter = event.detail.filter;
+        currentFilter = filter;
+
+        const filterNotice = document.getElementById('filterNotice');
+        const filterType = document.getElementById('filterType');
+
+        if (filter === 'all') {
+            // Show all cases
+            filterNotice.classList.remove('show');
+            fetchCasesWithPriority(); // Fetch all cases
+        } else {
+            // Fetch filtered cases from API
+            fetchCasesWithPriority(filter);
+            filterNotice.classList.add('show');
+            filterType.textContent = filter.charAt(0).toUpperCase() + filter.slice(1);
+        }
+    });
+
+    // ===== CLEAR FILTER =====
+    function clearCaseFilter() {
+        window.parent.clearFilter();
+    }
+
+    // ===== LOAD SAVED VIEW PREFERENCE =====
+    window.addEventListener('DOMContentLoaded', function() {
+        const savedView = localStorage.getItem('cmDashboardView');
+        if (savedView && ['compact', 'detailed', 'kanban'].includes(savedView)) {
+            switchView(savedView);
+        }
+    });
+
+    // ===== KANBAN DRAG & DROP =====
+    document.querySelectorAll('.kanban-card').forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            this.style.opacity = '0.4';
+        });
+
+        card.addEventListener('dragend', function(e) {
+            this.style.opacity = '1';
+        });
+    });
+
+    document.querySelectorAll('.kanban-column').forEach(column => {
+        column.addEventListener('dragover', function(e) {
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        });
+
+        column.addEventListener('drop', function(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            // TODO: Handle drop logic - update case stage
+            console.log('Dropped card into column');
+            return false;
+        });
+    });
+
+    // ===== FETCH CASES WITH PRIORITY ALGORITHM =====
+    async function fetchCasesWithPriority(filterType = 'all') {
+        try {
+            // Build query params
+            let queryParams = '';
+            if (filterType && filterType !== 'all') {
+                queryParams = `?filter=${filterType}`;
+            }
+
+            const response = await fetch(`/api/case-managers/cases-with-priority${queryParams}`);
+            const data = await response.json();
+
+            if (data.success) {
+                allCases = data.cases;
+                renderCases(data.cases);
+                updateCaseCount(data.cases.length);
+                console.log(`✅ Fetched ${data.cases.length} cases with priority calculations`);
+            } else {
+                console.error('❌ Failed to fetch cases:', data.error);
+                showEmptyState();
+            }
+        } catch (error) {
+            console.error('❌ Error fetching cases:', error);
+            showEmptyState();
+        }
+    }
+
+    // ===== RENDER CASES TO TABLE =====
+    function renderCases(cases) {
+        const tbody = document.getElementById('casesTableBody');
+
+        if (!cases || cases.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        // Clear existing sample data
+        tbody.innerHTML = '';
+
+        cases.forEach(caseData => {
+            // Create main case row
+            const row = document.createElement('tr');
+            row.setAttribute('data-case-id', caseData.casePin);
+            row.setAttribute('data-priority', caseData.priority.level);
+            row.setAttribute('data-stage', caseData.workflowStage);
+
+            // Map priority level to CSS class
+            const priorityClass = caseData.priority.level === 'urgent' ? 'priority-urgent' :
+                                 caseData.priority.level === 'attention' ? 'priority-attention' :
+                                 'priority-on-track';
+
+            row.innerHTML = `
+                <td>
+                    <span class="priority-dot ${priorityClass}" title="${caseData.priority.label} - ${caseData.priority.days} days"></span>
+                    <span class="case-id">${caseData.casePin}</span>
+                </td>
+                <td>${caseData.clientName}</td>
+                <td>${caseData.assignedCM}</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${caseData.progressPercent}%"></div>
+                        </div>
+                        <span class="progress-percent">${caseData.progressPercent}%</span>
+                    </div>
+                    <div class="progress-stage">${caseData.stageLabel}</div>
+                </td>
+                <td>${caseData.consentReceivedAt ? '✅ Received' : '🔒 Pending'}</td>
+                <td>${getNextActionLabel(caseData.workflowStage)}</td>
+                <td>
+                    <span style="color: ${caseData.priority.color}; font-weight: 600;">
+                        ${caseData.priority.days} days
+                    </span>
+                </td>
+                <td>
+                    <button class="expand-btn" onclick="toggleCaseDetails('${caseData.casePin}')">+</button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+
+            // Create FULL expandable details row with 7 sections
+            const detailsRow = document.createElement('tr');
+            detailsRow.className = 'case-details-row';
+            detailsRow.id = `${caseData.casePin}-details`;
+
+            // Check workflow gates
+            const consentReceived = caseData.consentReceivedAt !== null;
+            const inaCompleted = caseData.workflowStage >= 6;
+            const rdComplete = caseData.workflowStage >= 7;
+            const reportComplete = caseData.workflowStage >= 8;
+            const internalReviewComplete = caseData.workflowStage >= 9;
+
+            detailsRow.innerHTML = `
+                <td colspan="8" class="case-details-cell">
+                    <div class="case-details">
+                        <!-- 7-Section Tabs -->
+                        <div class="details-tabs">
+                            <button class="detail-tab active" onclick="switchDetailTab('${caseData.casePin}', 'timeline')">Timeline</button>
+                            <button class="detail-tab" onclick="switchDetailTab('${caseData.casePin}', 'rd')">R&D</button>
+                            <button class="detail-tab" onclick="switchDetailTab('${caseData.casePin}', 'report')">Report</button>
+                            <button class="detail-tab" onclick="switchDetailTab('${caseData.casePin}', 'documents')">Documents</button>
+                            <button class="detail-tab" onclick="switchDetailTab('${caseData.casePin}', 'readers')">Readers</button>
+                            <button class="detail-tab" onclick="switchDetailTab('${caseData.casePin}', 'ina')">INA Visit</button>
+                            <button class="detail-tab" onclick="switchDetailTab('${caseData.casePin}', 'actions')">Actions</button>
+                        </div>
+
+                        <!-- Section 1: Timeline -->
+                        <div class="detail-section active" id="${caseData.casePin}-timeline">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Workflow Timeline</h3>
+                                ${generateTimelineHTML(caseData)}
+                            </div>
+                        </div>
+
+                        <!-- Section 2: R&D Tracker -->
+                        <div class="detail-section" id="${caseData.casePin}-rd">
+                            <div class="details-section">
+                                <h3 class="details-section-title">R&D Tracker</h3>
+                                ${rdComplete ? generateRDTrackerHTML(caseData) : generateLockedGateHTML('R&D phase', 'INA visit must be completed')}
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Report Writing Status -->
+                        <div class="detail-section" id="${caseData.casePin}-report">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Report Writing Status</h3>
+                                ${reportComplete ? generateReportStatusHTML(caseData) : generateLockedGateHTML('Report writing', 'R&D phase must be completed')}
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Documents -->
+                        <div class="detail-section" id="${caseData.casePin}-documents">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Document Library</h3>
+                                ${consentReceived ? generateDocumentsHTML(caseData) : generateLockedGateHTML('Medical notes', 'Consent must be received')}
+                            </div>
+                        </div>
+
+                        <!-- Section 5: Readers -->
+                        <div class="detail-section" id="${caseData.casePin}-readers">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Reader Assignments</h3>
+                                ${internalReviewComplete ? generateReadersHTML(caseData) : generateLockedGateHTML('Reader assignment', 'Internal review must be completed')}
+                            </div>
+                        </div>
+
+                        <!-- Section 6: INA Visit -->
+                        <div class="detail-section" id="${caseData.casePin}-ina">
+                            <div class="details-section">
+                                <h3 class="details-section-title">INA Visit Details</h3>
+                                ${inaCompleted ? generateINADetailsHTML(caseData) : '<p style="color: #64748b;">INA visit not yet completed</p>'}
+                            </div>
+                        </div>
+
+                        <!-- Section 7: Quick Actions -->
+                        <div class="detail-section" id="${caseData.casePin}-actions">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Quick Actions</h3>
+                                ${generateQuickActionsHTML(caseData, consentReceived, internalReviewComplete)}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(detailsRow);
+        });
+
+        // Hide empty state, show table
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('compactView').style.display = 'table';
+    }
+
+    // ===== HELPER FUNCTIONS FOR SECTION GENERATION =====
+
+    function generateTimelineHTML(caseData) {
+        const stageNames = [
+            'Case opened',
+            'Client contacted',
+            'Consent sent',
+            'Consent received',
+            'INA visit scheduled',
+            'INA visit completed',
+            'R&D phase started',
+            'Report writing started',
+            'Internal review completed',
+            '1st reader assigned',
+            '1st reader corrections received',
+            '2nd reader assigned',
+            '2nd reader corrections received',
+            'Case closed'
+        ];
+
+        let html = '';
+        for (let i = 1; i <= caseData.workflowStage; i++) {
+            const icon = '✅';
+            html += `
+                <div class="timeline-item">
+                    <span class="timeline-icon">${icon}</span>
+                    <span class="timeline-text"><strong>Stage ${i}:</strong> ${stageNames[i-1]}</span>
+                </div>
+            `;
+        }
+
+        // Show upcoming stages
+        for (let i = caseData.workflowStage + 1; i <= Math.min(caseData.workflowStage + 2, 14); i++) {
+            html += `
+                <div class="timeline-item">
+                    <span class="timeline-icon pending">⏳</span>
+                    <span class="timeline-text" style="color: #cbd5e1;"><strong>Stage ${i}:</strong> ${stageNames[i-1]}</span>
+                </div>
+            `;
+        }
+
+        return html;
+    }
+
+    function generateLockedGateHTML(section, requirement) {
+        return `
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+                <span class="gate-lock">🔒 ${section} locked until ${requirement}</span>
+            </p>
+            <p style="font-size: 13px; color: #94a3b8;">
+                This section will unlock automatically when the required workflow stage is reached.
+            </p>
+        `;
+    }
+
+    function generateRDTrackerHTML(caseData) {
+        return `
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+                R&D phase for case ${caseData.casePin}
+            </p>
+            <button class="action-btn" onclick="openResearchWorkspace('${caseData.casePin}')">
+                📚 Open Research Workspace
+            </button>
+        `;
+    }
+
+    function generateReportStatusHTML(caseData) {
+        return `
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+                Report writing for case ${caseData.casePin}
+            </p>
+            <button class="action-btn" onclick="openReportEditor('${caseData.casePin}')">
+                ✍️ Open Report Editor
+            </button>
+        `;
+    }
+
+    function generateDocumentsHTML(caseData) {
+        return `
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                    <span>📄 Consent Form ${caseData.consentReceivedAt ? '(signed)' : '(pending)'}</span>
+                    <button class="action-btn" style="padding: 4px 12px;" ${!caseData.consentReceivedAt ? 'disabled' : ''}>View</button>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                    <span>📋 Medical Notes</span>
+                    <button class="action-btn" style="padding: 4px 12px;" ${!caseData.consentReceivedAt ? 'disabled' : ''}>View</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateReadersHTML(caseData) {
+        return `
+            <div style="padding: 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 8px;">
+                <div style="font-weight: 600; margin-bottom: 4px;">1st Reader</div>
+                <div style="font-size: 13px; color: #64748b;">Not yet assigned</div>
+                <button class="action-btn" style="margin-top: 8px;" onclick="alert('Reader assignment - Coming soon!')">
+                    👤 Assign 1st Reader
+                </button>
+            </div>
+            <div style="padding: 12px; background: #f8fafc; border-radius: 6px;">
+                <div style="font-weight: 600; margin-bottom: 4px;">2nd Reader</div>
+                <div style="font-size: 13px; color: #64748b;">Not yet assigned</div>
+            </div>
+        `;
+    }
+
+    function generateINADetailsHTML(caseData) {
+        return `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <div style="font-size: 12px; color: #64748b;">Date</div>
+                    <div style="font-weight: 600;">${caseData.inaVisitDate ? new Date(caseData.inaVisitDate).toLocaleDateString() : 'Not scheduled'}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #64748b;">Status</div>
+                    <div style="font-weight: 600;">${caseData.workflowStage >= 6 ? 'Completed' : 'Pending'}</div>
+                </div>
+            </div>
+            <div style="margin-top: 16px;">
+                <button class="action-btn" onclick="alert('INA Form viewer - Coming in Phase 2C!')">View INA Form</button>
+            </div>
+        `;
+    }
+
+    function generateQuickActionsHTML(caseData, consentReceived, internalReviewComplete) {
+        return `
+            <div class="quick-actions">
+                <button class="action-btn">📞 Contact Client</button>
+                <button class="action-btn">📧 Email Lawyer</button>
+                <button class="action-btn" ${!internalReviewComplete ? 'disabled' : ''}>👤 Assign 1st Reader</button>
+                <button class="action-btn" ${!consentReceived ? 'disabled' : ''}>📄 View Medical Notes</button>
+                <button class="action-btn">🗓️ Schedule Follow-up</button>
+                <button class="action-btn">💬 Add Note</button>
+                <button class="action-btn" ${caseData.workflowStage < 7 ? 'disabled' : ''} onclick="openResearchWorkspace('${caseData.casePin}')">📚 Research Workspace</button>
+                <button class="action-btn" ${caseData.workflowStage < 8 ? 'disabled' : ''} onclick="openReportEditor('${caseData.casePin}')">✍️ Report Editor</button>
+                <button class="action-btn" onclick="alert('Mark stage complete - Coming soon!')">✅ Mark Stage Complete</button>
+            </div>
+        `;
+    }
+
+    // ===== GET NEXT ACTION LABEL =====
+    function getNextActionLabel(stage) {
+        const actionMap = {
+            1: 'Contact client',
+            2: 'Send consent form',
+            3: 'Await consent',
+            4: 'Book INA visit',
+            5: 'Complete INA visit',
+            6: 'Start R&D',
+            7: 'Begin report writing',
+            8: 'Submit for review',
+            9: 'Review draft report',
+            10: 'Await 1st reader feedback',
+            11: 'Apply corrections',
+            12: 'Await 2nd reader feedback',
+            13: 'Final corrections',
+            14: 'Close case'
+        };
+        return actionMap[stage] || 'In progress';
+    }
+
+    // ===== SHOW EMPTY STATE =====
+    function showEmptyState() {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('compactView').style.display = 'none';
+        document.getElementById('casesTableBody').innerHTML = '';
+        updateCaseCount(0);
+    }
+
+    // ===== UPDATE CASE COUNT =====
+    function updateCaseCount(count) {
+        const plural = count === 1 ? 'case' : 'cases';
+        document.getElementById('caseCount').textContent = `${count} ${plural} shown`;
+    }
+
+    // ===== LOAD CASES ON PAGE LOAD =====
+    window.addEventListener('DOMContentLoaded', function() {
+        // Load saved view preference
+        const savedView = localStorage.getItem('cmDashboardView');
+        if (savedView && ['compact', 'detailed', 'kanban'].includes(savedView)) {
+            switchView(savedView);
+        }
+
+        // Fetch cases with priority
+        fetchCasesWithPriority();
+    });
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK G: WEBSOCKET EVENT LISTENERS -->
+<!-- Real-time case updates from parent dashboard -->
+<!-- ========================================== -->
+
+    // ===== WEBSOCKET REAL-TIME UPDATES =====
+
+    // Listen for real-time case refresh events from parent dashboard
+    window.addEventListener('refreshCases', function(event) {
+        console.log('[My Cases Tab] 🔔 Refresh event received from WebSocket');
+
+        // Re-fetch cases with current filter
+        if (currentFilter && currentFilter !== 'all') {
+            fetchCasesWithPriority(currentFilter);
+        } else {
+            fetchCasesWithPriority();
+        }
+    });
+
+    // Listen for specific case updates
+    window.addEventListener('case:updated', function(event) {
+        const casePin = event.detail?.casePin;
+        console.log('[My Cases Tab] 🔔 Case updated:', casePin);
+
+        // Option 1: Re-fetch all cases (simpler)
+        fetchCasesWithPriority(currentFilter);
+
+        // Option 2: Update specific case (more efficient - future enhancement)
+        // updateSpecificCase(casePin);
+    });
+
+    // Listen for case assignment events
+    window.addEventListener('case:assigned', function(event) {
+        const { casePin, cmPin } = event.detail || {};
+        console.log('[My Cases Tab] 🔔 Case assigned:', casePin, '→', cmPin);
+
+        // Refresh cases list to show new assignment
+        fetchCasesWithPriority(currentFilter);
+    });
+
+    // Listen for stage change events
+    window.addEventListener('case:stage-change', function(event) {
+        const { casePin, newStage } = event.detail || {};
+        console.log('[My Cases Tab] 🔔 Case stage changed:', casePin, '→ Stage', newStage);
+
+        // Refresh cases to show updated progress
+        fetchCasesWithPriority(currentFilter);
+    });
+
+    console.log('My Cases Tab Enhanced - Loaded with WebSocket listeners ✅');
+</script>

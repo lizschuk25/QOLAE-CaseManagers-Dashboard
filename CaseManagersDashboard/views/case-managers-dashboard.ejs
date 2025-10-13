@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Manager Dashboard - QOLAE</title>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK A.1: SOCKET.IO CLIENT CDN -->
+<!-- Real-time WebSocket integration -->
+<!-- ========================================== -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
+            integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
+            crossorigin="anonymous"></script>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK A.2: CSS ARCHITECTURE -->
+<!-- Parent file - Tab-based professional layout -->
+<!-- Pattern: Parent-Child (like Lawyers Dashboard) -->
+<!-- Author: Liz & Claude -->
+<!-- Date: October 12, 2025 -->
+<!-- ========================================== -->
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .welcome-text {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .date-display {
+            font-weight: 500;
+        }
+
+        /* ===== ACTION CENTER ===== */
+        .action-center {
+            background: white;
+            padding: 30px 40px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .action-center-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .action-card {
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .action-card.urgent {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .action-card.urgent:hover {
+            border-color: #ef4444;
+        }
+
+        .action-card.today {
+            background: #fefce8;
+            border-color: #fef08a;
+        }
+
+        .action-card.today:hover {
+            border-color: #eab308;
+        }
+
+        .action-card.ready {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .action-card.ready:hover {
+            border-color: #22c55e;
+        }
+
+        .action-card.pending {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .action-card.pending:hover {
+            border-color: #3b82f6;
+        }
+
+        .action-card.active {
+            border-width: 3px;
+        }
+
+        .action-card.urgent.active {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .action-card.today.active {
+            border-color: #ca8a04;
+            box-shadow: 0 0 0 3px rgba(202, 138, 4, 0.1);
+        }
+
+        .action-card.ready.active {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .action-card.pending.active {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .action-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .action-icon {
+            font-size: 20px;
+        }
+
+        .action-count {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .action-card.urgent .action-count {
+            color: #dc2626;
+        }
+
+        .action-card.today .action-count {
+            color: #ca8a04;
+        }
+
+        .action-card.ready .action-count {
+            color: #16a34a;
+        }
+
+        .action-card.pending .action-count {
+            color: #2563eb;
+        }
+
+        .action-label {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .action-description {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* ===== TAB NAVIGATION ===== */
+        .tabs {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 40px;
+            display: flex;
+            gap: 30px;
+        }
+
+        .tab {
+            padding: 16px 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .tab:hover {
+            color: #3b82f6;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-badge {
+            background: #3b82f6;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .tab-icon {
+            font-size: 16px;
+        }
+
+        /* ===== TAB CONTENT CONTAINER ===== */
+        .tab-content-container {
+            background: white;
+            min-height: 600px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .action-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header,
+            .action-center,
+            .tabs {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                gap: 20px;
+            }
+
+            .header-meta {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 1: HEADER -->
+<!-- Dashboard title and user info -->
+<!-- ========================================== -->
+        <header class="header">
+            <div>
+                <h1 class="header-title">Case Manager Dashboard</h1>
+                <p class="welcome-text">Welcome back, <%= cmName || 'Liz' %></p>
+            </div>
+            <div class="header-meta">
+                <span class="date-display" id="currentDate"></span>
+            </div>
+        </header>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 2: ACTION CENTER -->
+<!-- Always-visible task filtering system -->
+<!-- Maps to: URGENT, TODAY, READY, PENDING priorities -->
+<!-- ========================================== -->
+        <section class="action-center">
+            <h2 class="action-center-title">Action Center</h2>
+            <div class="action-cards">
+                <div class="action-card urgent" onclick="filterCases('urgent')" id="urgent-card">
+                    <div class="action-card-header">
+                        <span class="action-icon">⚠️</span>
+                    </div>
+                    <div class="action-count" id="urgentCount">3</div>
+                    <div class="action-label">Urgent</div>
+                    <div class="action-description">clients waiting for INA booking</div>
+                </div>
+
+                <div class="action-card today" onclick="filterCases('today')" id="today-card">
+                    <div class="action-card-header">
+                        <span class="action-icon">⏰</span>
+                    </div>
+                    <div class="action-count" id="todayCount">2</div>
+                    <div class="action-label">Today</div>
+                    <div class="action-description">INA visits scheduled</div>
+                </div>
+
+                <div class="action-card ready" onclick="filterCases('ready')" id="ready-card">
+                    <div class="action-card-header">
+                        <span class="action-icon">✅</span>
+                    </div>
+                    <div class="action-count" id="readyCount">5</div>
+                    <div class="action-label">Ready</div>
+                    <div class="action-description">consents received - contact clients</div>
+                </div>
+
+                <div class="action-card pending" onclick="filterCases('pending')" id="pending-card">
+                    <div class="action-card-header">
+                        <span class="action-icon">📋</span>
+                    </div>
+                    <div class="action-count" id="pendingCount">2</div>
+                    <div class="action-label">Pending</div>
+                    <div class="action-description">cases awaiting reader assignment</div>
+                </div>
+            </div>
+        </section>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 3: TAB NAVIGATION -->
+<!-- Role-based sections: My Cases, Reader Mgmt, Approvals, CM Mgmt -->
+<!-- Management (Liz): All 4 tabs | Contractor CMs: My Cases only -->
+<!-- ========================================== -->
+        <nav class="tabs">
+            <div class="tab active" onclick="switchTab('my-cases')" id="tab-my-cases">
+                <span class="tab-icon">📋</span>
+                My Cases
+            </div>
+
+            <% if (userRole === 'management') { %>
+                <div class="tab" onclick="switchTab('reader-management')" id="tab-reader-management">
+                    <span class="tab-icon">👥</span>
+                    Reader Management
+                </div>
+                <div class="tab" onclick="switchTab('approval-queue')" id="tab-approval-queue">
+                    <span class="tab-icon">💰</span>
+                    Approval Queue
+                    <span class="tab-badge" id="approvalCount">2</span>
+                </div>
+                <div class="tab" onclick="switchTab('cm-management')" id="tab-cm-management">
+                    <span class="tab-icon">👨‍💼</span>
+                    CM Management
+                </div>
+            <% } %>
+        </nav>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 4: TAB CONTENT CONTAINER -->
+<!-- Each tab loads its own child component -->
+<!-- ========================================== -->
+        <main class="tab-content-container">
+            <!-- My Cases Tab (All users) -->
+            <div id="my-cases" class="tab-content active">
+                <%- include('tabs/my-cases-tab.ejs') %>
+            </div>
+
+            <% if (userRole === 'management') { %>
+                <!-- Reader Management Tab (Management only) -->
+                <div id="reader-management" class="tab-content">
+                    <%- include('tabs/reader-management-tab.ejs') %>
+                </div>
+
+                <!-- Approval Queue Tab (Management only) -->
+                <div id="approval-queue" class="tab-content">
+                    <%- include('tabs/approval-queue-tab.ejs') %>
+                </div>
+
+                <!-- CM Management Tab (Management only) -->
+                <div id="cm-management" class="tab-content">
+                    <%- include('tabs/cm-management-tab.ejs') %>
+                </div>
+            <% } %>
+        </main>
+    </div>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 4.5: MODAL INCLUDES -->
+<!-- Research Workspace & Report Editor Modals -->
+<!-- Phase 2B Integration -->
+<!-- ========================================== -->
+    <%- include('modals/research-workspace-modal.ejs') %>
+    <%- include('modals/report-editor-modal.ejs') %>
+
+<!-- ========================================== -->
+<!-- LOCATION BLOCK 5: JAVASCRIPT - TAB & FILTER LOGIC -->
+<!-- ========================================== -->
+    <script>
+        // ===== TAB SWITCHING =====
+        function switchTab(tabId) {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Add active class to selected tab and content
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            console.log('Switched to tab:', tabId);
+        }
+
+        // ===== FILTER CASES BY ACTION CENTER =====
+        function filterCases(filter) {
+            // Remove active state from all cards
+            document.querySelectorAll('.action-card').forEach(card => card.classList.remove('active'));
+
+            // Add active state to clicked card
+            document.getElementById(filter + '-card').classList.add('active');
+
+            console.log('Filtering cases by:', filter);
+
+            // Emit event for child tabs to listen to
+            window.dispatchEvent(new CustomEvent('filterCases', {
+                detail: { filter: filter }
+            }));
+
+            // TODO: Backend integration - fetch filtered cases
+            // fetch(`/api/case-managers/cases?filter=${filter}`)
+            //     .then(res => res.json())
+            //     .then(data => updateCasesTable(data))
+        }
+
+        // ===== DYNAMIC DATE DISPLAY =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateDisplay = document.getElementById('currentDate');
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateDisplay.textContent = today.toLocaleDateString('en-GB', options);
+
+            // Log user role for debugging
+            console.log('User role:', '<%= userRole %>');
+            console.log('Dashboard loaded for:', '<%= cmName || "Liz" %>');
+        });
+
+        // ===== CLEAR FILTER =====
+        function clearFilter() {
+            document.querySelectorAll('.action-card').forEach(card => card.classList.remove('active'));
+            window.dispatchEvent(new CustomEvent('filterCases', {
+                detail: { filter: 'all' }
+            }));
+        }
+
+        // ===== AUTO-REFRESH BADGE COUNTS =====
+        async function refreshBadgeCounts() {
+            try {
+                const response = await fetch('/api/case-managers/badge-counts');
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update Action Center counts
+                    document.getElementById('urgentCount').textContent = data.counts.urgent || 0;
+                    document.getElementById('todayCount').textContent = data.counts.today || 0;
+                    document.getElementById('readyCount').textContent = data.counts.ready || 0;
+                    document.getElementById('pendingCount').textContent = data.counts.pending || 0;
+
+                    // Update Approval Queue badge (if exists)
+                    const approvalBadge = document.getElementById('approvalCount');
+                    if (approvalBadge && data.counts.approvalQueue !== undefined) {
+                        approvalBadge.textContent = data.counts.approvalQueue;
+                        approvalBadge.style.display = data.counts.approvalQueue > 0 ? 'inline-block' : 'none';
+                    }
+
+                    console.log('Badge counts refreshed:', data.counts);
+                }
+            } catch (error) {
+                console.error('Failed to refresh badge counts:', error);
+            }
+        }
+
+        // ===== AUTO-REFRESH INTERVAL (30 SECONDS) =====
+        let refreshInterval;
+
+        function startAutoRefresh() {
+            // Initial refresh
+            refreshBadgeCounts();
+
+            // Set up 30-second interval
+            refreshInterval = setInterval(refreshBadgeCounts, 30000);
+            console.log('Auto-refresh started (every 30 seconds)');
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                console.log('Auto-refresh stopped');
+            }
+        }
+
+        // Start auto-refresh when page loads
+        document.addEventListener('DOMContentLoaded', startAutoRefresh);
+
+        // Stop auto-refresh when page unloads
+        window.addEventListener('beforeunload', stopAutoRefresh);
+
+        // ===== WEBSOCKET INTEGRATION =====
+        // Real-time updates via Socket.IO
+        // Server: api.qolae.com:3007
+        // Path: /ws-case-managers/socket.io/
+
+        // ===== WEBSOCKET CONNECTION =====
+        let socket = null;
+        let isConnected = false;
+
+        function initializeWebSocket() {
+            try {
+                console.log('[WebSocket] Initializing connection to Case Managers WebSocket...');
+
+                // Connect to WebSocket server
+                socket = io('https://api.qolae.com', {
+                    path: '/ws-case-managers/socket.io/',
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionDelay: 1000,
+                    reconnectionAttempts: 5,
+                    withCredentials: true
+                });
+
+                // Connection successful
+                socket.on('connect', () => {
+                    isConnected = true;
+                    console.log('[WebSocket] ✅ Connected to Case Managers WS (ID:', socket.id + ')');
+
+                    // Authenticate with JWT token (from cookie)
+                    const token = getCookie('qolae_cm_token');
+                    if (token) {
+                        socket.emit('authenticate', { token: token });
+                    }
+                });
+
+                // Authentication successful
+                socket.on('authenticated', (data) => {
+                    console.log('[WebSocket] ✅ Authenticated as:', data.cmPin);
+
+                    // Join CM-specific room
+                    socket.emit('join-room', { cmPin: data.cmPin });
+                });
+
+                // Authentication failed
+                socket.on('auth-error', (error) => {
+                    console.error('[WebSocket] ❌ Authentication failed:', error.message);
+                });
+
+                // Badge count refresh event
+                socket.on('badge:refresh', (data) => {
+                    console.log('[WebSocket] 🔔 Badge counts updated:', data.counts);
+
+                    // Update Action Center counts
+                    if (data.counts) {
+                        document.getElementById('urgentCount').textContent = data.counts.urgent || 0;
+                        document.getElementById('todayCount').textContent = data.counts.today || 0;
+                        document.getElementById('readyCount').textContent = data.counts.ready || 0;
+                        document.getElementById('pendingCount').textContent = data.counts.pending || 0;
+
+                        // Update Approval Queue badge
+                        const approvalBadge = document.getElementById('approvalCount');
+                        if (approvalBadge && data.counts.approvalQueue !== undefined) {
+                            approvalBadge.textContent = data.counts.approvalQueue;
+                            approvalBadge.style.display = data.counts.approvalQueue > 0 ? 'inline-block' : 'none';
+                        }
+                    }
+
+                    // Show notification
+                    showNotification('Badge counts updated', 'info');
+                });
+
+                // Case assigned event
+                socket.on('case:assigned', (data) => {
+                    console.log('[WebSocket] 🔔 New case assigned:', data.casePin);
+                    showNotification(`New case assigned: ${data.casePin}`, 'success');
+
+                    // Refresh badge counts and cases list
+                    refreshBadgeCounts();
+                    triggerCasesRefresh();
+                });
+
+                // Case stage changed event
+                socket.on('case:stage-change', (data) => {
+                    console.log('[WebSocket] 🔔 Case stage updated:', data.casePin, '→', data.newStage);
+                    showNotification(`Case ${data.casePin} updated to Stage ${data.newStage}`, 'info');
+
+                    // Refresh cases list to show new stage
+                    triggerCasesRefresh();
+                });
+
+                // Consent received event
+                socket.on('case:consent-received', (data) => {
+                    console.log('[WebSocket] 🔔 Consent received:', data.casePin);
+                    showNotification(`Consent received for ${data.casePin}`, 'success');
+
+                    // Unlock medical notes access
+                    refreshBadgeCounts();
+                    triggerCasesRefresh();
+                });
+
+                // INA visit scheduled event
+                socket.on('case:ina-scheduled', (data) => {
+                    console.log('[WebSocket] 🔔 INA visit scheduled:', data.casePin);
+                    showNotification(`INA visit scheduled for ${data.casePin}`, 'info');
+
+                    // Update today count
+                    refreshBadgeCounts();
+                    triggerCasesRefresh();
+                });
+
+                // Reader assigned event
+                socket.on('case:reader-assigned', (data) => {
+                    console.log('[WebSocket] 🔔 Reader assigned:', data.readerPin, '→', data.casePin);
+                    showNotification(`Reader assigned to ${data.casePin}`, 'success');
+
+                    triggerCasesRefresh();
+                });
+
+                // Reader payment approved event
+                socket.on('reader:payment-approved', (data) => {
+                    console.log('[WebSocket] 🔔 Payment approved:', data.readerPin, '£' + data.amount);
+                    showNotification(`Payment approved: £${data.amount}`, 'success');
+
+                    // Refresh approval queue
+                    refreshBadgeCounts();
+                });
+
+                // Disconnection
+                socket.on('disconnect', (reason) => {
+                    isConnected = false;
+                    console.log('[WebSocket] ⚠️ Disconnected:', reason);
+
+                    if (reason === 'io server disconnect') {
+                        // Server disconnected, try to reconnect manually
+                        setTimeout(() => socket.connect(), 1000);
+                    }
+                });
+
+                // Connection error
+                socket.on('connect_error', (error) => {
+                    console.error('[WebSocket] ❌ Connection error:', error.message);
+                });
+
+                // Reconnection attempt
+                socket.on('reconnect_attempt', (attemptNumber) => {
+                    console.log('[WebSocket] 🔄 Reconnecting (attempt', attemptNumber + ')...');
+                });
+
+                // Reconnection successful
+                socket.on('reconnect', (attemptNumber) => {
+                    console.log('[WebSocket] ✅ Reconnected after', attemptNumber, 'attempts');
+                    showNotification('Connection restored', 'success');
+
+                    // Refresh data after reconnection
+                    refreshBadgeCounts();
+                    triggerCasesRefresh();
+                });
+
+            } catch (error) {
+                console.error('[WebSocket] Failed to initialize:', error);
+            }
+        }
+
+        // ===== HELPER FUNCTIONS =====
+
+        // Get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // Show notification (simple version - can be enhanced with toast library)
+        function showNotification(message, type = 'info') {
+            console.log(`[Notification ${type}]:`, message);
+            // TODO: Implement toast notification UI
+            // For now, just log to console
+        }
+
+        // Trigger cases refresh in child tab
+        function triggerCasesRefresh() {
+            window.dispatchEvent(new CustomEvent('refreshCases'));
+        }
+
+        // Request manual badge refresh
+        function requestBadgeRefresh() {
+            if (socket && isConnected) {
+                socket.emit('badge:refresh');
+            } else {
+                // Fallback to polling
+                refreshBadgeCounts();
+            }
+        }
+
+        // Initialize WebSocket when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeWebSocket();
+        });
+
+        // Clean up WebSocket on page unload
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+                console.log('[WebSocket] Disconnected on page unload');
+            }
+        });
+    </script>
+</body>
+</html>

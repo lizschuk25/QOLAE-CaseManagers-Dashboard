@@ -1,0 +1,139 @@
+<!-- ========================================== -->
+<!-- READER MANAGEMENT TAB (CHILD COMPONENT) -->
+<!-- Register readers, track availability, process payments -->
+<!-- Used by: Management (Liz) only -->
+<!-- Author: Liz & Claude -->
+<!-- Date: October 12, 2025 -->
+<!-- ========================================== -->
+
+<style>
+    .content {
+        padding: 30px 40px;
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .content-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .reader-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .reader-info {
+        flex: 1;
+    }
+
+    .reader-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .reader-meta {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .reader-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+</style>
+
+<div class="content">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title">Reader Management</h2>
+        </div>
+        <button class="btn-primary" onclick="window.location.href='/readers-registration'">
+            Register New Reader
+        </button>
+    </div>
+
+    <div class="reader-card">
+        <div class="reader-info">
+            <div class="reader-name">Dr. Smith</div>
+            <div class="reader-meta">Available • 12 cases completed • Last payment: Sep 2025</div>
+        </div>
+        <div class="reader-actions">
+            <button class="btn-secondary">View Details</button>
+            <button class="btn-primary">Process Payment</button>
+        </div>
+    </div>
+
+    <div class="reader-card">
+        <div class="reader-info">
+            <div class="reader-name">Dr. Brown</div>
+            <div class="reader-meta">Available • 12 cases completed • Last payment: Sep 2025</div>
+        </div>
+        <div class="reader-actions">
+            <button class="btn-secondary">View Details</button>
+            <button class="btn-primary">Process Payment</button>
+        </div>
+    </div>
+
+    <div class="reader-card">
+        <div class="reader-info">
+            <div class="reader-name">Dr. Lee</div>
+            <div class="reader-meta">Available • 12 cases completed • Last payment: Sep 2025</div>
+        </div>
+        <div class="reader-actions">
+            <button class="btn-secondary">View Details</button>
+            <button class="btn-primary">Process Payment</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    console.log('Reader Management tab loaded');
+</script>

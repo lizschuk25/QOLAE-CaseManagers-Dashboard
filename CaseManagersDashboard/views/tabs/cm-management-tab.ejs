@@ -1,0 +1,137 @@
+<!-- ========================================== -->
+<!-- CM MANAGEMENT TAB (CHILD COMPONENT) -->
+<!-- Onboard and manage Case Managers -->
+<!-- Used by: Management (Liz) only -->
+<!-- Author: Liz & Claude -->
+<!-- Date: October 12, 2025 -->
+<!-- ========================================== -->
+
+<style>
+    .content {
+        padding: 30px 40px;
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .content-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .cm-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .cm-info {
+        flex: 1;
+    }
+
+    .cm-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .cm-meta {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .cm-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+</style>
+
+<div class="content">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title">Case Manager Management</h2>
+        </div>
+        <button class="btn-primary">Onboard New CM</button>
+    </div>
+
+    <div class="cm-card">
+        <div class="cm-info">
+            <div class="cm-name">Emma Thompson</div>
+            <div class="cm-meta">Active • 8 cases assigned • Joined Mar 2024</div>
+        </div>
+        <div class="cm-actions">
+            <button class="btn-secondary">View Workload</button>
+            <button class="btn-secondary">Reassign Cases</button>
+        </div>
+    </div>
+
+    <div class="cm-card">
+        <div class="cm-info">
+            <div class="cm-name">David Park</div>
+            <div class="cm-meta">Active • 10 cases assigned • Joined Mar 2024</div>
+        </div>
+        <div class="cm-actions">
+            <button class="btn-secondary">View Workload</button>
+            <button class="btn-secondary">Reassign Cases</button>
+        </div>
+    </div>
+
+    <div class="cm-card">
+        <div class="cm-info">
+            <div class="cm-name">Rachel Green</div>
+            <div class="cm-meta">Active • 12 cases assigned • Joined Mar 2024</div>
+        </div>
+        <div class="cm-actions">
+            <button class="btn-secondary">View Workload</button>
+            <button class="btn-secondary">Reassign Cases</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    console.log('CM Management tab loaded');
+</script>

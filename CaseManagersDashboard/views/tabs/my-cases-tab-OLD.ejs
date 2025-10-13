@@ -1,0 +1,508 @@
+<!-- ========================================== -->
+<!-- MY CASES TAB (CHILD COMPONENT) -->
+<!-- Case table with expandable rows -->
+<!-- Used by: Both Management (Liz) and Contractor CMs -->
+<!-- Author: Liz & Claude -->
+<!-- Date: October 12, 2025 -->
+<!-- ========================================== -->
+
+<!-- LOCATION BLOCK A: TAB-SPECIFIC CSS -->
+<style>
+    /* ===== CONTENT HEADER ===== */
+    .content {
+        padding: 30px 40px;
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .content-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .content-count {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .filter-active-notice {
+        display: none;
+        background: #eff6ff;
+        border: 1px solid #3b82f6;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #1e40af;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-active-notice.show {
+        display: flex;
+    }
+
+    .clear-filter-btn {
+        background: white;
+        border: 1px solid #3b82f6;
+        color: #3b82f6;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .clear-filter-btn:hover {
+        background: #3b82f6;
+        color: white;
+    }
+
+    /* ===== CASES TABLE ===== */
+    .cases-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .cases-table thead {
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cases-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .cases-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s ease;
+    }
+
+    .cases-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .cases-table td {
+        padding: 16px;
+        font-size: 14px;
+    }
+
+    .case-id {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .case-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .status-draft {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-review {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-complete {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-pending {
+        background: #fce7f3;
+        color: #9f1239;
+    }
+
+    .expand-btn {
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .expand-btn:hover {
+        background: #f1f5f9;
+        color: #3b82f6;
+    }
+
+    /* ===== EXPANDED CASE DETAILS ===== */
+    .case-details-row {
+        display: none;
+    }
+
+    .case-details-row.show {
+        display: table-row;
+    }
+
+    .case-details-cell {
+        padding: 0 !important;
+        background: #f8fafc;
+    }
+
+    .case-details {
+        padding: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .details-section {
+        background: white;
+        padding: 16px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .details-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #1e293b;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+
+    .timeline-icon {
+        color: #22c55e;
+        font-size: 16px;
+        margin-top: 2px;
+    }
+
+    .timeline-icon.pending {
+        color: #cbd5e1;
+    }
+
+    .timeline-text {
+        color: #64748b;
+        flex: 1;
+    }
+
+    .timeline-text strong {
+        color: #1e293b;
+    }
+
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+    .action-btn:hover {
+        background: #f8fafc;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #64748b;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+        font-size: 14px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .content {
+            padding: 20px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cases-table {
+            font-size: 12px;
+        }
+
+        .cases-table td,
+        .cases-table th {
+            padding: 10px;
+        }
+
+        /* Hide less important columns on mobile */
+        .cases-table th:nth-child(4),
+        .cases-table td:nth-child(4),
+        .cases-table th:nth-child(6),
+        .cases-table td:nth-child(6) {
+            display: none;
+        }
+    }
+</style>
+
+<!-- LOCATION BLOCK B: CONTENT HEADER -->
+<div class="content">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title">My Cases</h2>
+            <p class="content-count" id="caseCount">1 case shown</p>
+        </div>
+        <div class="filter-active-notice" id="filterNotice">
+            <span>Filtering by: <strong id="filterType"></strong></span>
+            <button class="clear-filter-btn" onclick="clearCaseFilter()">Clear filter</button>
+        </div>
+    </div>
+
+<!-- LOCATION BLOCK C: CASES TABLE -->
+    <table class="cases-table" id="casesTable">
+        <thead>
+            <tr>
+                <th>Case ID</th>
+                <th>Client Name</th>
+                <th>Stage</th>
+                <th>Readers</th>
+                <th>Next Action</th>
+                <th>Due Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="casesTableBody">
+            <!-- Sample Case 1 -->
+            <tr data-case-id="case-1" data-priority="pending">
+                <td class="case-id">INA-2024-002</td>
+                <td>Michael Chen</td>
+                <td><span class="case-status status-draft">1st Draft</span></td>
+                <td>Dr. Brown, Dr. Lee</td>
+                <td>Review draft</td>
+                <td>7 days</td>
+                <td>
+                    <button class="expand-btn" onclick="toggleCaseDetails('case-1')">+</button>
+                </td>
+            </tr>
+            <tr class="case-details-row" id="case-1-details">
+                <td colspan="7" class="case-details-cell">
+                    <div class="case-details">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Timeline</h3>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">●</span>
+                                    <span class="timeline-text"><strong>Oct 7:</strong> Consent received</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">●</span>
+                                    <span class="timeline-text"><strong>Oct 5:</strong> Initial contact made</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon pending">○</span>
+                                    <span class="timeline-text"><strong>Oct 1:</strong> Case opened</span>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h3 class="details-section-title">Quick Actions</h3>
+                                <div class="quick-actions">
+                                    <button class="action-btn">📞 Contact Client</button>
+                                    <button class="action-btn">👤 Assign Reader</button>
+                                    <button class="action-btn">📄 View Documents</button>
+                                    <button class="action-btn">📝 Open Report Editor</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Sample Case 2 -->
+            <tr data-case-id="case-2" data-priority="urgent" style="display: none;">
+                <td class="case-id">INA-2024-003</td>
+                <td>Sarah Johnson</td>
+                <td><span class="case-status status-pending">Pending Contact</span></td>
+                <td>—</td>
+                <td>Book INA visit</td>
+                <td>Overdue</td>
+                <td>
+                    <button class="expand-btn" onclick="toggleCaseDetails('case-2')">+</button>
+                </td>
+            </tr>
+            <tr class="case-details-row" id="case-2-details">
+                <td colspan="7" class="case-details-cell">
+                    <div class="case-details">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h3 class="details-section-title">Timeline</h3>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon">●</span>
+                                    <span class="timeline-text"><strong>Oct 3:</strong> Consent sent</span>
+                                </div>
+                                <div class="timeline-item">
+                                    <span class="timeline-icon pending">○</span>
+                                    <span class="timeline-text"><strong>Sep 28:</strong> Case opened</span>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h3 class="details-section-title">Quick Actions</h3>
+                                <div class="quick-actions">
+                                    <button class="action-btn">📞 Contact Client</button>
+                                    <button class="action-btn">📅 Schedule INA Visit</button>
+                                    <button class="action-btn">📄 View Consent Form</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Empty State (shown when no cases match filter) -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-title">No cases found</div>
+        <div class="empty-state-text">Try adjusting your filter or check back later.</div>
+    </div>
+</div>
+
+<!-- LOCATION BLOCK D: TAB-SPECIFIC JAVASCRIPT -->
+<script>
+    // ===== TOGGLE CASE DETAILS =====
+    function toggleCaseDetails(caseId) {
+        const detailsRow = document.getElementById(caseId + '-details');
+        const btn = event.target;
+
+        if (detailsRow.classList.contains('show')) {
+            detailsRow.classList.remove('show');
+            btn.textContent = '+';
+        } else {
+            // Close all other expanded cases
+            document.querySelectorAll('.case-details-row').forEach(row => {
+                row.classList.remove('show');
+            });
+            document.querySelectorAll('.expand-btn').forEach(button => {
+                button.textContent = '+';
+            });
+
+            // Open this case
+            detailsRow.classList.add('show');
+            btn.textContent = '−';
+        }
+    }
+
+    // ===== LISTEN FOR FILTER EVENTS FROM PARENT =====
+    window.addEventListener('filterCases', function(event) {
+        const filter = event.detail.filter;
+        const rows = document.querySelectorAll('#casesTableBody tr[data-case-id]');
+        const filterNotice = document.getElementById('filterNotice');
+        const filterType = document.getElementById('filterType');
+        const emptyState = document.getElementById('emptyState');
+        const casesTable = document.getElementById('casesTable');
+        let visibleCount = 0;
+
+        if (filter === 'all') {
+            // Show all cases
+            rows.forEach(row => {
+                row.style.display = 'table-row';
+                visibleCount++;
+            });
+            filterNotice.classList.remove('show');
+            emptyState.style.display = 'none';
+            casesTable.style.display = 'table';
+        } else {
+            // Filter cases by priority
+            rows.forEach(row => {
+                const priority = row.getAttribute('data-priority');
+                if (priority === filter) {
+                    row.style.display = 'table-row';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                    // Also hide the details row
+                    const caseId = row.getAttribute('data-case-id');
+                    const detailsRow = document.getElementById(caseId + '-details');
+                    if (detailsRow) {
+                        detailsRow.classList.remove('show');
+                    }
+                }
+            });
+
+            // Show filter notice
+            filterNotice.classList.add('show');
+            filterType.textContent = filter.charAt(0).toUpperCase() + filter.slice(1);
+        }
+
+        // Show empty state if no cases match
+        if (visibleCount === 0) {
+            emptyState.style.display = 'block';
+            casesTable.style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            casesTable.style.display = 'table';
+        }
+
+        // Update count
+        const plural = visibleCount === 1 ? 'case' : 'cases';
+        document.getElementById('caseCount').textContent = `${visibleCount} ${plural} shown`;
+    });
+
+    // ===== CLEAR FILTER =====
+    function clearCaseFilter() {
+        window.parent.clearFilter();
+    }
+
+    console.log('My Cases tab loaded');
+</script>

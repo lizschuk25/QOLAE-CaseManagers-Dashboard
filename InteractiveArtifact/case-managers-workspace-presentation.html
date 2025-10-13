@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Managers Workspace - Architectural Review</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: #333;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 16px;
+            padding: 60px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        .slide-number {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #1a202c;
+            margin-top: 10px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 36px;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            font-size: 24px;
+            color: #4a5568;
+            margin: 30px 0 15px 0;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #718096;
+            margin-top: 15px;
+        }
+
+        .workflow-chain {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        .workflow-arrow {
+            color: #667eea;
+            font-size: 24px;
+            margin: 10px 20px;
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .workspace-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .workspace-card h3 {
+            color: white;
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .workspace-card ul {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .workspace-card li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .workspace-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .architecture-option {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+
+        .architecture-option h3 {
+            color: #2d3748;
+            margin-top: 0;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .pros, .cons {
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .pros {
+            background: #c6f6d5;
+            border-left: 4px solid #38a169;
+        }
+
+        .cons {
+            background: #fed7d7;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .pros h4, .cons h4 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .pros ul, .cons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .pros li, .cons li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .pros li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #38a169;
+            font-weight: bold;
+        }
+
+        .cons li:before {
+            content: "✗";
+            position: absolute;
+            left: 0;
+            color: #e53e3e;
+            font-weight: bold;
+        }
+
+        .key-requirements {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .requirement-item {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .requirement-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .timeline {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin: 20px 0;
+            align-items: flex-start;
+        }
+
+        .timeline-marker {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .timeline-content p {
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .highlight-box h4 {
+            color: #f39c12;
+            margin-bottom: 15px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .action-items {
+            background: #e6fffa;
+            border: 2px solid #38b2ac;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .action-items h3 {
+            color: #38b2ac;
+            margin-top: 0;
+        }
+
+        .action-items ol {
+            margin-left: 20px;
+            margin-top: 20px;
+        }
+
+        .action-items li {
+            padding: 10px 0;
+            font-size: 18px;
+            color: #2d3748;
+        }
+
+        .cover-slide {
+            text-align: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .cover-slide h1 {
+            color: white;
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+
+        .cover-slide .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 24px;
+        }
+
+        .cover-slide .date {
+            margin-top: 40px;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media print {
+            .slide {
+                page-break-after: always;
+                margin-bottom: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px 20px;
+                min-height: auto;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+
+        <!-- SLIDE 1: COVER -->
+        <div class="slide cover-slide">
+            <h1>Case Managers Dashboard</h1>
+            <p class="subtitle">Architectural Review & Workspace Design Options</p>
+            <p class="date">October 2025 | QOLAE Online Portal</p>
+        </div>
+
+        <!-- SLIDE 2: EXECUTIVE SUMMARY -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 02</div>
+                <h2>Executive Summary</h2>
+            </div>
+
+            <p style="font-size: 18px; line-height: 1.8; color: #4a5568; margin-bottom: 30px;">
+                Following our architectural review of the Case Managers Dashboard Phase 2B implementation,
+                we've identified a critical misalignment between the initial build and the actual clinical
+                workflow requirements. This presentation outlines the corrected understanding and presents
+                three architectural options for review.
+            </p>
+
+            <div class="highlight-box">
+                <h4>Key Discovery</h4>
+                <p style="line-height: 1.6;">The initial implementation treated R&D as a standalone workspace, but the actual workflow
+                requires three distinct, interconnected workspaces that follow the clinical assessment sequence:
+                INA Form completion → R&D research phase → INA Report finalization.</p>
+            </div>
+
+            <h3>What's Being Proposed</h3>
+            <ul style="line-height: 2; font-size: 18px; margin-left: 30px;">
+                <li>Rebuild with correct workflow understanding</li>
+                <li>Three distinct workspace types (not standalone modals)</li>
+                <li>Mobile-friendly design with desktop compatibility</li>
+                <li>Time tracking in 6-minute increments (£125/hour billing)</li>
+                <li>Smart auto-population chain from INA Form → INA Report</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 3: CURRENT WORKFLOW UNDERSTANDING -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 03</div>
+                <h2>Clinical Workflow Sequence</h2>
+            </div>
+
+            <div class="workflow-chain">
+                <h3 style="margin-top: 0; color: #667eea;">Complete Auto-Population Chain</h3>
+
+                <div class="workflow-step">
+                    <strong>Lawyers Dashboard:</strong> Consent Form + Case Referral completed
+                </div>
+                <div class="workflow-arrow">↓ AUTO-POPULATE</div>
+
+                <div class="workflow-step">
+                    <strong>CM Dashboard:</strong> INA Checklist + INA Form + INA Report Template created
+                </div>
+                <div class="workflow-arrow">↓ PRE-INA CONTACT</div>
+
+                <div class="workflow-step">
+                    <strong>Initial Contact:</strong> CM introduces self, answers queries, listens to story, books INA visit
+                </div>
+                <div class="workflow-arrow">↓ INA VISIT (&lt;1 hour)</div>
+
+                <div class="workflow-step">
+                    <strong>INA Form Completed:</strong> 15 sections, photos/videos, clinical assessment
+                </div>
+                <div class="workflow-arrow">↓ AUTO-POPULATE</div>
+
+                <div class="workflow-step">
+                    <strong>INA Report Template:</strong> Pre-filled with INA Form data (skeleton)
+                </div>
+                <div class="workflow-arrow">↓ R&D PHASE</div>
+
+                <div class="workflow-step">
+                    <strong>Research & Development:</strong> Phone calls to GP, nurses, specialists, evidence gathering
+                </div>
+                <div class="workflow-arrow">↓ FINALIZE</div>
+
+                <div class="workflow-step">
+                    <strong>Complete INA Report:</strong> 5,000 words, court-ready, target 10 days
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h4>Critical Insight</h4>
+                <p style="line-height: 1.6;">
+                    <strong>R&D happens AFTER the INA visit</strong>, not as a standalone workspace. It's an integrated
+                    phase where the CM uses clinical expertise, research, phone consultations, and evidence gathering
+                    to validate and strengthen their recommendations before finalizing the court-ready INA Report.
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: THREE DISTINCT WORKSPACES -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 04</div>
+                <h2>Three Distinct Workspaces Required</h2>
+            </div>
+
+            <div class="workspace-grid">
+                <div class="workspace-card">
+                    <h3>1️⃣ INA Form Workspace</h3>
+                    <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">
+                        Interactive 15-section clinical assessment form
+                    </p>
+                    <ul>
+                        <li>Mobile-friendly for on-site visits</li>
+                        <li>Can complete back at office</li>
+                        <li>Target: &lt;1 hour completion</li>
+                        <li>Photo/video upload capability</li>
+                        <li>Progressive save functionality</li>
+                        <li>Sections: Client Details, Background, Mental Capacity, Clinical Assessments, ADLs, Goals, etc.</li>
+                    </ul>
+                </div>
+
+                <div class="workspace-card">
+                    <h3>2️⃣ R&D Notes Workspace</h3>
+                    <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">
+                        Research tracking after INA visit completion
+                    </p>
+                    <ul>
+                        <li>Document phone calls (GP, nurses, specialists)</li>
+                        <li>Evidence tracking system</li>
+                        <li>NICE guidelines integration</li>
+                        <li>Case law references</li>
+                        <li>Time logging in 6-min increments</li>
+                        <li>Automatic billing at £125/hour</li>
+                        <li>Session timer + manual time entry</li>
+                    </ul>
+                </div>
+
+                <div class="workspace-card">
+                    <h3>3️⃣ INA Report Editor</h3>
+                    <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">
+                        Final 5,000-word court-ready document
+                    </p>
+                    <ul>
+                        <li>Based on INAReportTemplate.pdf structure</li>
+                        <li>Pre-populated with INA Form data</li>
+                        <li>Integrated R&D panel (insert findings)</li>
+                        <li>Rich text editor with formatting</li>
+                        <li>Auto-save every 30 seconds</li>
+                        <li>Word count tracker</li>
+                        <li>Section completion indicators</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 18px; color: #4a5568; line-height: 1.8;">
+                These three workspaces must work together seamlessly, with data flowing from INA Form → R&D Notes → INA Report Editor.
+                The architecture must support both the intensive clinical assessment phase and the collaborative research phase.
+            </p>
+        </div>
+
+        <!-- SLIDE 5: ARCHITECTURAL OPTION A -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 05</div>
+                <h2>Option A: Tab-Based Workspaces</h2>
+            </div>
+
+            <div class="architecture-option">
+                <h3>Overview</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    Dedicated workspace tabs within the Case Managers Dashboard. When a CM clicks to work on a case,
+                    they see tabs for "INA Form", "R&D Notes", and "INA Report" side-by-side. All workspaces stay
+                    open simultaneously, allowing quick switching without losing context.
+                </p>
+
+                <h3>User Experience Flow</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">1</div>
+                        <div class="timeline-content">
+                            <h4>Select Case</h4>
+                            <p>Click on case from "My Cases" list</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">2</div>
+                        <div class="timeline-content">
+                            <h4>View Tabs</h4>
+                            <p>See horizontal tabs: INA Form | R&D Notes | INA Report</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">3</div>
+                        <div class="timeline-content">
+                            <h4>Switch Freely</h4>
+                            <p>Click tabs to switch workspaces, all auto-save in background</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">4</div>
+                        <div class="timeline-content">
+                            <h4>Close Workspace</h4>
+                            <p>Single "X" button closes all tabs and returns to case list</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>All workspaces visible at once (mental model clarity)</li>
+                        <li>No repetitive modal opening/closing</li>
+                        <li>Quick context switching between INA → R&D → Report</li>
+                        <li>Desktop-friendly for complex multi-tasking</li>
+                        <li>Easy to see completion status across all workspaces</li>
+                        <li>Familiar UI pattern (browser tabs, Excel sheets)</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Considerations</h4>
+                    <ul>
+                        <li>Less mobile-friendly (tabs harder to tap on small screens)</li>
+                        <li>Takes over full dashboard (can't see case list)</li>
+                        <li>Requires careful responsive design for tablets</li>
+                        <li>May need "minimize" option to return to case list</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: ARCHITECTURAL OPTION B -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 06</div>
+                <h2>Option B: Inline Expandable Workspaces</h2>
+            </div>
+
+            <div class="architecture-option">
+                <h3>Overview</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    Workspaces expand directly within the case card/row in the "My Cases" list. When you click
+                    "Open INA Form", the workspace slides down below that case, pushing other cases down. You can
+                    expand multiple workspaces at once (e.g., R&D Notes and INA Report side-by-side).
+                </p>
+
+                <h3>User Experience Flow</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">1</div>
+                        <div class="timeline-content">
+                            <h4>Browse Cases</h4>
+                            <p>See compact case list with action buttons</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">2</div>
+                        <div class="timeline-content">
+                            <h4>Expand Workspace</h4>
+                            <p>Click "Open INA Form" → workspace slides down below case</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">3</div>
+                        <div class="timeline-content">
+                            <h4>Work In-Context</h4>
+                            <p>Complete INA form while case details remain visible above</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">4</div>
+                        <div class="timeline-content">
+                            <h4>Collapse When Done</h4>
+                            <p>Click "Collapse" → workspace slides up, returns to case list</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Case details always visible (context preserved)</li>
+                        <li>No navigation away from case list</li>
+                        <li>Can compare multiple cases side-by-side</li>
+                        <li>Mobile-friendly (vertical scrolling is natural)</li>
+                        <li>Lightweight feel (no full-screen takeover)</li>
+                        <li>Great for quick edits and updates</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Considerations</h4>
+                    <ul>
+                        <li>Limited screen space for complex forms</li>
+                        <li>Heavy scrolling for long INA forms (15 sections)</li>
+                        <li>Can't see multiple workspaces simultaneously</li>
+                        <li>May feel cramped for 5,000-word report editing</li>
+                        <li>Harder to implement rich text editor in constrained space</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: ARCHITECTURAL OPTION C -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 07</div>
+                <h2>Option C: Modal Overlay (Current Implementation)</h2>
+            </div>
+
+            <div class="architecture-option">
+                <h3>Overview</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    Full-screen modal overlays that appear on top of the dashboard. When you click "Open INA Form",
+                    a modal covers the entire screen with the INA Form workspace. Close the modal to return to the
+                    dashboard. This is the current implementation pattern used in Lawyers and Readers dashboards.
+                </p>
+
+                <h3>User Experience Flow</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">1</div>
+                        <div class="timeline-content">
+                            <h4>Select Case</h4>
+                            <p>Click "Open INA Form" button from case actions</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">2</div>
+                        <div class="timeline-content">
+                            <h4>Modal Opens</h4>
+                            <p>Full-screen modal appears with INA Form (z-index 1000)</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">3</div>
+                        <div class="timeline-content">
+                            <h4>Work in Modal</h4>
+                            <p>Complete INA form with full screen space available</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">4</div>
+                        <div class="timeline-content">
+                            <h4>Close Modal</h4>
+                            <p>Click "X" or "Close" → returns to dashboard case list</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">5</div>
+                        <div class="timeline-content">
+                            <h4>Open Another Workspace</h4>
+                            <p>Click "R&D Notes" → new modal opens (repeat cycle)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Advantages</h4>
+                    <ul>
+                        <li>Maximum screen space for complex forms</li>
+                        <li>Focused environment (no distractions)</li>
+                        <li>Works on all device sizes (mobile → desktop)</li>
+                        <li>Consistent with other QOLAE dashboards</li>
+                        <li>Easy to implement rich text editors</li>
+                        <li>Familiar pattern for users</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Considerations</h4>
+                    <ul>
+                        <li>Repetitive opening/closing for multi-workspace tasks</li>
+                        <li>Can't view multiple workspaces simultaneously</li>
+                        <li>Loses context of case list when modal open</li>
+                        <li>Navigation overhead (open → work → close → reopen)</li>
+                        <li>May feel cumbersome for CMs with many tasks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: COMPARISON TABLE -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 08</div>
+                <h2>Side-by-Side Comparison</h2>
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Criteria</th>
+                        <th>Tab-Based (A)</th>
+                        <th>Inline Expandable (B)</th>
+                        <th>Modal Overlay (C)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Mobile-Friendly</strong></td>
+                        <td>⚠️ Moderate (tabs hard to tap)</td>
+                        <td>✅ Excellent (natural scrolling)</td>
+                        <td>✅ Excellent (full screen)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Desktop Efficiency</strong></td>
+                        <td>✅ Excellent (multi-tasking)</td>
+                        <td>⚠️ Moderate (scrolling required)</td>
+                        <td>✅ Good (focused work)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Multi-Workspace Workflow</strong></td>
+                        <td>✅ Excellent (quick switching)</td>
+                        <td>⚠️ Moderate (sequential access)</td>
+                        <td>❌ Poor (repetitive open/close)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Screen Space</strong></td>
+                        <td>✅ Maximum (full screen tabs)</td>
+                        <td>❌ Limited (inline constraint)</td>
+                        <td>✅ Maximum (full screen modal)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Context Preservation</strong></td>
+                        <td>⚠️ Moderate (hides case list)</td>
+                        <td>✅ Excellent (case always visible)</td>
+                        <td>❌ Poor (hides everything)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Learning Curve</strong></td>
+                        <td>✅ Low (familiar tabs)</td>
+                        <td>⚠️ Moderate (unique pattern)</td>
+                        <td>✅ Low (familiar modals)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Complex Forms (INA)</strong></td>
+                        <td>✅ Excellent (full space)</td>
+                        <td>❌ Poor (cramped)</td>
+                        <td>✅ Excellent (full space)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Report Editing (5,000 words)</strong></td>
+                        <td>✅ Excellent (full editor)</td>
+                        <td>❌ Poor (too constrained)</td>
+                        <td>✅ Excellent (full editor)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Implementation Complexity</strong></td>
+                        <td>⚠️ Moderate (tab state management)</td>
+                        <td>⚠️ Moderate (dynamic expansion)</td>
+                        <td>✅ Low (existing pattern)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                <h3 style="color: #667eea; margin-top: 0;">Recommendation Matrix</h3>
+                <ul style="line-height: 2; font-size: 16px;">
+                    <li><strong>Option A (Tab-Based):</strong> Best for desktop-heavy workflows where CMs need to jump between INA Form, R&D Notes, and Report frequently</li>
+                    <li><strong>Option B (Inline):</strong> Best for mobile-first approach with simpler, shorter tasks and quick updates</li>
+                    <li><strong>Option C (Modal):</strong> Best for focused, sequential work where each workspace is completed before moving to next</li>
+                    <li><strong>Hybrid Approach:</strong> Could combine Tab-Based for desktop with Modal for mobile (responsive switch)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: KEY REQUIREMENTS -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 09</div>
+                <h2>Critical Requirements (All Options Must Support)</h2>
+            </div>
+
+            <div class="key-requirements">
+                <h3 style="margin-top: 0; color: #e53e3e;">Non-Negotiable Features</h3>
+
+                <div class="requirement-item">
+                    <h4>1. Cross-Device Compatibility</h4>
+                    <p>Must work seamlessly on mobile/tablet (INA visits on-site) AND laptop/desktop (office work).
+                    Responsive design is critical.</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>2. Time Tracking in 6-Minute Increments</h4>
+                    <p>R&D Notes workspace must log time in 6-minute increments with automatic billing calculation
+                    at £125/hour. Include session timer + manual time entry options.</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>3. Auto-Population Chain</h4>
+                    <p>Data must flow automatically:<br>
+                    → Lawyers Dashboard completes referral<br>
+                    → CM Dashboard creates INA Checklist, INA Form, INA Report Template<br>
+                    → INA Form completion auto-populates INA Report Template<br>
+                    → R&D findings can be inserted into INA Report</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>4. INA Form Structure</h4>
+                    <p>Must follow the 15-section structure from INA.pdf: Client Details, Background, Mental Capacity,
+                    Consent, Employment History, Clinical Assessments, Physical Measurements, Cognitive Screening,
+                    Mobility/ADLs, Goals, Environmental Assessment, Values, Wellbeing, Sign-Off.</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>5. INA Report Template Alignment</h4>
+                    <p>Report Editor must be based on INAReportTemplate.pdf structure (NOT generic 7 sections).
+                    Pre-populate with INA Form data. Target: 5,000 words, court-ready, 10-day completion.</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>6. R&D Evidence Tracking</h4>
+                    <p>Must support documenting phone calls (GP, nurses, specialists), NICE guidelines, case law references,
+                    research notes, and evidence tagging for insertion into report.</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>7. Progressive Save & Auto-Save</h4>
+                    <p>INA Form must support progressive save (on-site + back at office). All workspaces need auto-save
+                    every 30 seconds to prevent data loss.</p>
+                </div>
+
+                <div class="requirement-item">
+                    <h4>8. Media Upload Capability</h4>
+                    <p>INA Form needs photo/video upload functionality for documenting home environment, equipment,
+                    mobility demonstrations during visit.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: CLAUDE AI BASELINE SUGGESTIONS -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 10</div>
+                <h2>Claude AI Baseline Recommendations</h2>
+            </div>
+
+            <p style="font-size: 18px; color: #4a5568; margin-bottom: 30px; line-height: 1.8;">
+                Based on the initial Claude AI consultation, the following architectural patterns were suggested
+                for the Case Managers Dashboard baseline implementation:
+            </p>
+
+            <div class="architecture-option">
+                <h3>Recommended Approach: Hybrid Tab + Modal System</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    Claude AI suggested a hybrid approach that combines the benefits of tab-based navigation
+                    with modal overlays for complex workspaces:
+                </p>
+
+                <ul style="line-height: 2; font-size: 16px; margin-left: 30px; margin-bottom: 25px;">
+                    <li><strong>Primary Navigation:</strong> Tab-based system for case overview, timeline, notes, documents</li>
+                    <li><strong>Complex Workspaces:</strong> Full-screen modals for INA Form, R&D Notes, Report Editor</li>
+                    <li><strong>Quick Actions:</strong> Inline expandable panels for simple updates (notes, status changes)</li>
+                    <li><strong>Mobile Strategy:</strong> Collapse tabs to hamburger menu, modals remain full-screen</li>
+                </ul>
+
+                <h3>Key Features Highlighted</h3>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>Strengths</h4>
+                        <ul>
+                            <li>Balances simplicity and functionality</li>
+                            <li>Familiar patterns for users</li>
+                            <li>Scalable for future features</li>
+                            <li>Responsive design built-in</li>
+                            <li>Consistent with existing QOLAE dashboards</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>Areas to Enhance</h4>
+                        <ul>
+                            <li>Modal repetition for multi-workspace tasks</li>
+                            <li>Context loss when modal open</li>
+                            <li>Need for better workspace interconnection</li>
+                            <li>Time tracking integration unclear</li>
+                            <li>Auto-population chain not fully visualized</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h4>Claude AI's Core Philosophy</h4>
+                <p style="line-height: 1.6;">
+                    "Start with familiar patterns (tabs + modals), validate with users through real usage,
+                    then iterate based on feedback. Don't over-engineer upfront—let the workflow guide the architecture."
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: MY ARCHITECTURAL ENHANCEMENTS -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 11</div>
+                <h2>My Architectural Enhancements</h2>
+            </div>
+
+            <p style="font-size: 18px; color: #4a5568; margin-bottom: 30px; line-height: 1.8;">
+                Building on Claude AI's baseline, I've developed three distinct architectural options that
+                address the specific challenges of the CM workflow:
+            </p>
+
+            <div class="architecture-option">
+                <h3>Enhancement 1: Dedicated Tab-Based Workspace (Option A)</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    <strong>Key Innovation:</strong> All three workspaces (INA Form, R&D Notes, INA Report) are
+                    visible as tabs when working on a case. This eliminates modal fatigue and enables rapid
+                    context switching—critical for CMs who need to reference INA Form data while writing R&D notes
+                    or updating the report.
+                </p>
+                <ul style="line-height: 1.8; margin-left: 30px;">
+                    <li>Visual progress indicators on each tab (e.g., "INA Form 80% complete")</li>
+                    <li>Smart notifications when data in one workspace affects another</li>
+                    <li>Keyboard shortcuts for power users (Alt+1/2/3 to switch tabs)</li>
+                </ul>
+            </div>
+
+            <div class="architecture-option">
+                <h3>Enhancement 2: Inline Expandable with Smart Positioning (Option B)</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    <strong>Key Innovation:</strong> Workspaces expand inline but with intelligent height
+                    management and "sticky" workspace headers. When you scroll down in a long INA Form, the
+                    case details and workspace header stick to the top, maintaining context.
+                </p>
+                <ul style="line-height: 1.8; margin-left: 30px;">
+                    <li>Expandable sections within workspaces (accordions) to manage complexity</li>
+                    <li>Side-by-side workspace expansion option on large screens</li>
+                    <li>"Maximize" button to convert inline workspace to full-screen when needed</li>
+                </ul>
+            </div>
+
+            <div class="architecture-option">
+                <h3>Enhancement 3: Smart Modal System with Context Panel (Option C+)</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px;">
+                    <strong>Key Innovation:</strong> Enhanced modal system where modals include a collapsible
+                    left panel showing case context and quick links to other workspaces. Click "Jump to R&D Notes"
+                    from INA Form modal → smooth transition without losing work.
+                </p>
+                <ul style="line-height: 1.8; margin-left: 30px;">
+                    <li>Modal stacking: Can open R&D Notes as a side panel WHILE INA Report modal is open</li>
+                    <li>"Picture-in-Picture" mode for R&D Notes (minimized floating window)</li>
+                    <li>Smart save state: Close modal → auto-save → reopen exactly where you left off</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <h4>My Core Philosophy</h4>
+                <p style="line-height: 1.6;">
+                    "The CM workflow is fundamentally different from Lawyers/Readers—it's multi-workspace,
+                    iterative, and requires constant reference between INA Form, R&D Notes, and Report.
+                    The architecture must support this fluidity, not fight against it with repetitive modal clicks."
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: COMBINED APPROACH -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 12</div>
+                <h2>Recommended Combined Approach</h2>
+            </div>
+
+            <p style="font-size: 18px; color: #4a5568; margin-bottom: 30px; line-height: 1.8;">
+                After analyzing Claude AI's baseline and my three enhanced options, here's a synthesized
+                recommendation that combines the best of both:
+            </p>
+
+            <div class="architecture-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h3 style="color: white;">Adaptive Hybrid Architecture</h3>
+                <p style="line-height: 1.8; margin-bottom: 20px; opacity: 0.95;">
+                    <strong>Desktop (≥1024px):</strong> Tab-Based Workspace (Option A) with context panel<br>
+                    <strong>Tablet (768px-1023px):</strong> Smart Modal System (Option C+) with quick-switch sidebar<br>
+                    <strong>Mobile (≤767px):</strong> Full-Screen Modal (Option C) with bottom navigation bar
+                </p>
+
+                <h3 style="color: white; margin-top: 30px;">How It Works</h3>
+                <ul style="line-height: 1.8;">
+                    <li><strong>Desktop:</strong> CM sees tabbed interface—INA Form | R&D Notes | INA Report. Quick switching, all data visible.</li>
+                    <li><strong>Tablet:</strong> CM opens modal for INA Form, sees sidebar with "Quick Jump to R&D Notes" and mini case summary.</li>
+                    <li><strong>Mobile:</strong> CM opens full-screen INA Form modal, bottom nav shows "INA" | "R&D" | "Report" for quick switching.</li>
+                    <li><strong>All Devices:</strong> Auto-save every 30s, smart notifications when data updates, time tracking in 6-min increments.</li>
+                </ul>
+            </div>
+
+            <h3 style="margin-top: 40px;">Why This Combination Works</h3>
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>Key Benefits</h4>
+                    <ul>
+                        <li>Optimizes for each device type (no compromises)</li>
+                        <li>Desktop users get multi-tasking power</li>
+                        <li>Mobile users get focused, distraction-free workspace</li>
+                        <li>Consistent mental model (same workflow, adaptive UI)</li>
+                        <li>Future-proof (can add new workspaces easily)</li>
+                        <li>Respects Claude AI's "familiar patterns" philosophy</li>
+                        <li>Incorporates my "multi-workspace fluidity" enhancements</li>
+                    </ul>
+                </div>
+                <div class="cons">
+                    <h4>Implementation Considerations</h4>
+                    <ul>
+                        <li>Requires responsive breakpoint logic</li>
+                        <li>Need unified state management across UI modes</li>
+                        <li>More testing required across device types</li>
+                        <li>Slightly higher development complexity</li>
+                        <li>User training for different device experiences</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: IMPLEMENTATION ROADMAP -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 13</div>
+                <h2>Implementation Roadmap</h2>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker">1</div>
+                    <div class="timeline-content">
+                        <h4>Phase 1: Colleague Review & Decision (Current)</h4>
+                        <p><strong>Duration:</strong> 3-5 days<br>
+                        <strong>Activities:</strong> Share this presentation with trusted colleagues, gather feedback,
+                        decide on architectural approach (Option A, B, C, or Adaptive Hybrid)</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">2</div>
+                    <div class="timeline-content">
+                        <h4>Phase 2: INA Form Workspace Build</h4>
+                        <p><strong>Duration:</strong> 5-7 days<br>
+                        <strong>Activities:</strong> Convert INA.pdf into interactive 15-section form, implement
+                        mobile-friendly UI, add photo/video upload, progressive save, integrate with auto-population
+                        from Lawyers Dashboard</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">3</div>
+                    <div class="timeline-content">
+                        <h4>Phase 3: R&D Notes Workspace Build</h4>
+                        <p><strong>Duration:</strong> 4-6 days<br>
+                        <strong>Activities:</strong> Build research tracking interface, implement phone call logger,
+                        evidence tagging system, 6-minute time tracking with £125/hour billing, NICE guidelines integration</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">4</div>
+                    <div class="timeline-content">
+                        <h4>Phase 4: INA Report Editor Rebuild</h4>
+                        <p><strong>Duration:</strong> 5-7 days<br>
+                        <strong>Activities:</strong> Read INAReportTemplate.pdf, restructure report editor to match
+                        template sections, integrate auto-population from INA Form, add R&D findings insertion panel,
+                        word count (5,000 target), section completion tracking</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">5</div>
+                    <div class="timeline-content">
+                        <h4>Phase 5: Workspace Interconnection</h4>
+                        <p><strong>Duration:</strong> 3-4 days<br>
+                        <strong>Activities:</strong> Implement data flow INA Form → INA Report, R&D Notes → INA Report,
+                        quick-switch navigation between workspaces, smart notifications when data updates</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">6</div>
+                    <div class="timeline-content">
+                        <h4>Phase 6: Testing & Refinement</h4>
+                        <p><strong>Duration:</strong> 4-5 days<br>
+                        <strong>Activities:</strong> Cross-device testing (mobile, tablet, desktop), user acceptance
+                        testing with CMs, performance optimization, bug fixes, documentation</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker">7</div>
+                    <div class="timeline-content">
+                        <h4>Phase 7: Deployment to Live Server</h4>
+                        <p><strong>Duration:</strong> 1-2 days<br>
+                        <strong>Activities:</strong> Deploy to production, monitor for issues, CM training, gather
+                        initial feedback</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h4>Estimated Total Timeline: 25-36 Days</h4>
+                <p style="line-height: 1.6;">
+                    This timeline assumes focused development with minimal blockers. We can accelerate by
+                    parallelizing some phases (e.g., start R&D Notes build while INA Form is in testing).
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: DECISION FRAMEWORK -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 14</div>
+                <h2>Decision Framework for Colleagues</h2>
+            </div>
+
+            <p style="font-size: 18px; color: #4a5568; margin-bottom: 30px; line-height: 1.8;">
+                To help your colleagues provide structured feedback, here's a decision framework with
+                key questions to consider:
+            </p>
+
+            <div class="action-items">
+                <h3>Questions to Answer</h3>
+                <ol>
+                    <li><strong>Primary Device Usage:</strong> Do CMs primarily work on desktop (office-based)
+                    or mobile/tablet (field-based)? This drives the architecture choice.</li>
+
+                    <li><strong>Workflow Pattern:</strong> Do CMs typically complete one workspace before moving
+                    to the next (sequential), or do they jump back and forth frequently (iterative)?</li>
+
+                    <li><strong>Multi-Tasking Needs:</strong> How often do CMs need to reference INA Form data
+                    while writing R&D Notes or the INA Report? (High frequency → Tab-Based wins)</li>
+
+                    <li><strong>Time Tracking Priority:</strong> How critical is precise 6-minute time tracking
+                    for billing? Should it be prominent or subtle?</li>
+
+                    <li><strong>Familiarity vs. Innovation:</strong> Should we stick with familiar modal patterns
+                    (like Lawyers Dashboard) or introduce new tab-based system that may have learning curve?</li>
+
+                    <li><strong>Mobile INA Form Completion:</strong> What percentage of INA Forms do CMs complete
+                    entirely on-site vs. finishing back at office? (High on-site → mobile-first design critical)</li>
+
+                    <li><strong>R&D Intensity:</strong> How many phone calls / evidence pieces does a typical
+                    R&D phase involve? (High volume → dedicated workspace like Option A)</li>
+
+                    <li><strong>Report Editing Style:</strong> Do CMs draft reports in one sitting (5,000 words)
+                    or incrementally over multiple sessions? (Incremental → need excellent auto-save + resume)</li>
+                </ol>
+            </div>
+
+            <div class="requirement-item">
+                <h4>Feedback Template for Colleagues</h4>
+                <p style="margin-bottom: 15px;">Please provide your input in the following format:</p>
+                <ul style="line-height: 1.8; margin-left: 20px;">
+                    <li><strong>Preferred Architecture:</strong> Option A / B / C / Adaptive Hybrid / Other</li>
+                    <li><strong>Reasoning:</strong> Why this option best fits the CM workflow</li>
+                    <li><strong>Concerns:</strong> What could go wrong with this approach?</li>
+                    <li><strong>Must-Have Features:</strong> Any non-negotiable requirements not mentioned?</li>
+                    <li><strong>Nice-to-Have Features:</strong> Features that would be valuable but not critical</li>
+                    <li><strong>Device Priority:</strong> Desktop-first / Mobile-first / Equal priority</li>
+                    <li><strong>Timeline Pressure:</strong> Need it ASAP / Can wait for quality / Somewhere in between</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: NEXT STEPS & CONTACT -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">Slide 15</div>
+                <h2>Next Steps & Discussion</h2>
+            </div>
+
+            <div class="action-items">
+                <h3>Immediate Next Steps</h3>
+                <ol>
+                    <li><strong>Review this presentation</strong> with your two trusted colleagues</li>
+                    <li><strong>Open architecture-demo.html</strong> in browser to interact with the three options</li>
+                    <li><strong>Gather feedback</strong> using the Decision Framework (Slide 14)</li>
+                    <li><strong>Schedule follow-up discussion</strong> to make final architectural decision</li>
+                    <li><strong>Approve implementation roadmap</strong> (Slide 13) and timeline</li>
+                </ol>
+            </div>
+
+            <h3 style="margin-top: 40px;">Key Files to Review</h3>
+            <div class="workspace-grid">
+                <div class="workspace-card" style="background: #2d3748;">
+                    <h3>Interactive Demo</h3>
+                    <p style="opacity: 0.9; font-size: 14px; margin-top: 10px;">
+                        📁 architecture-demo.html<br>
+                        Open in browser to see all three options in action
+                    </p>
+                </div>
+                <div class="workspace-card" style="background: #2d3748;">
+                    <h3>Workflow Documentation</h3>
+                    <p style="opacity: 0.9; font-size: 14px; margin-top: 10px;">
+                        📁 CaseManagersWorkflow.md (lines 162-239)<br>
+                        Phase 5-6 sequence explained
+                    </p>
+                </div>
+                <div class="workspace-card" style="background: #2d3748;">
+                    <h3>INA Form Template</h3>
+                    <p style="opacity: 0.9; font-size: 14px; margin-top: 10px;">
+                        📁 docs/INA.pdf<br>
+                        15-section clinical assessment structure
+                    </p>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 40px;">
+                <h4>Questions? Concerns? Ideas?</h4>
+                <p style="line-height: 1.8;">
+                    Once you've reviewed this with your colleagues and have feedback, we can schedule a
+                    follow-up session to finalize the architectural approach and kick off Phase 2 rebuild.
+                </p>
+                <p style="margin-top: 15px; line-height: 1.8;">
+                    <strong>Remember:</strong> The goal is to build a CM Dashboard that supports the complex,
+                    multi-workspace clinical workflow—not just replicate the simpler modal patterns from
+                    Lawyers/Readers dashboards. Your colleagues' real-world CM experience will be invaluable
+                    in making the right decision.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 60px; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+                <h2 style="color: white; margin-bottom: 15px;">Thank you for reviewing!</h2>
+                <p style="font-size: 18px; opacity: 0.95;">
+                    Looking forward to hearing your colleagues' feedback and building the right solution together.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Print functionality
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                window.print();
+            }
+        });
+
+        // Slide navigation with arrow keys
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown' && currentSlide < slides.length - 1) {
+                currentSlide++;
+                slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+            } else if (e.key === 'ArrowUp' && currentSlide > 0) {
+                currentSlide--;
+                slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // Track which slide is in view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    currentSlide = Array.from(slides).indexOf(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        slides.forEach(slide => observer.observe(slide));
+    </script>
+</body>
+</html>

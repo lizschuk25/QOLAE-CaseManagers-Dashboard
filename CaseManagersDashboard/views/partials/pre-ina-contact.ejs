@@ -1,0 +1,575 @@
+<!-- ========================================== -->
+<!-- PRE-INA CONTACT FORM (STAGE 2 WORKFLOW) -->
+<!-- Case Manager introduces self, answers consent questions, books INA visit -->
+<!-- Used by: My Cases Tab expandable details -->
+<!-- Author: Liz & Claude -->
+<!-- Date: October 13, 2025 -->
+<!-- ========================================== -->
+
+<style>
+    /* Pre-INA Contact Form Styles */
+    .pre-ina-form {
+        padding: 20px;
+        background: white;
+    }
+
+    .form-section {
+        margin-bottom: 24px;
+    }
+
+    .form-section h4 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+
+    .outcome-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .outcome-btn {
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .outcome-btn:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .outcome-btn.active {
+        border-color: #3b82f6;
+        background: #3b82f6;
+        color: white;
+        font-weight: 600;
+    }
+
+    .success-banner {
+        background: #d1fae5;
+        border: 1px solid #10b981;
+        color: #065f46;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+
+    .info-banner {
+        background: #dbeafe;
+        border: 1px solid #3b82f6;
+        color: #1e40af;
+        padding: 12px;
+        border-radius: 6px;
+        margin-top: 12px;
+        font-size: 13px;
+    }
+
+    .helper-text {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .info-note {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 8px;
+        font-style: italic;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .what-happens-next {
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .what-happens-next h4 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .info-card {
+        background: white;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+    }
+
+    .info-card ul {
+        margin: 8px 0 0 20px;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .info-card li {
+        margin-bottom: 4px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .form-row,
+        .outcome-buttons {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="pre-ina-form" data-case-pin="<%= casePin %>">
+    <!-- Section 1: Call Details -->
+    <div class="form-section">
+        <h4>📞 Call Details</h4>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Call Date *</label>
+                <input type="date" id="callDate_<%= casePin %>" required>
+            </div>
+
+            <div class="form-group">
+                <label>Call Time *</label>
+                <input type="time" id="callTime_<%= casePin %>" required>
+            </div>
+
+            <div class="form-group">
+                <label>Duration (minutes) *</label>
+                <input type="number" id="callDuration_<%= casePin %>" placeholder="e.g., 15" min="1" required>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Call Outcome -->
+    <div class="form-section">
+        <h4>Call Outcome *</h4>
+        <p class="helper-text">Select the outcome of your call with the client</p>
+
+        <div class="outcome-buttons">
+            <button class="outcome-btn" data-outcome="reached-booking" onclick="selectOutcome('<%= casePin %>', 'reached-booking')">
+                ✅ Reached - Booking Made
+            </button>
+
+            <button class="outcome-btn" data-outcome="reached-followup" onclick="selectOutcome('<%= casePin %>', 'reached-followup')">
+                📅 Reached - Follow-up Needed
+            </button>
+
+            <button class="outcome-btn" data-outcome="voicemail" onclick="selectOutcome('<%= casePin %>', 'voicemail')">
+                📧 Voicemail Left
+            </button>
+
+            <button class="outcome-btn" data-outcome="no-answer" onclick="selectOutcome('<%= casePin %>', 'no-answer')">
+                ❌ No Answer
+            </button>
+
+            <button class="outcome-btn" data-outcome="wrong-number" onclick="selectOutcome('<%= casePin %>', 'wrong-number')">
+                ⚠️ Wrong Number
+            </button>
+        </div>
+    </div>
+
+    <!-- Section 3: Call Notes -->
+    <div class="form-section">
+        <h4>Call Notes</h4>
+        <p class="helper-text">Brief notes from your conversation with the client</p>
+
+        <textarea
+            id="callNotes_<%= casePin %>"
+            placeholder="E.g., Client asked about consent form, explained process, discussed mobility challenges..."
+            rows="4"
+            maxlength="500"
+        ></textarea>
+
+        <p class="info-note">
+            ℹ️ <strong>Note:</strong> The client's full story will be documented in the INA Form during the visit.
+        </p>
+    </div>
+
+    <!-- Section 4: INA Visit Booking (Conditional) -->
+    <div class="form-section" id="inaBookingSection_<%= casePin %>" style="display: none;">
+        <h4>📅 INA Visit Booking</h4>
+        <div class="success-banner">
+            ✅ Great! The client is ready to schedule their INA visit.
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Visit Date *</label>
+                <input type="date" id="visitDate_<%= casePin %>" required>
+            </div>
+
+            <div class="form-group">
+                <label>Visit Time *</label>
+                <input type="time" id="visitTime_<%= casePin %>" required>
+            </div>
+
+            <div class="form-group">
+                <label>Visit Location</label>
+                <input type="text" id="visitLocation_<%= casePin %>" value="Client's home" placeholder="Client's home">
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Safety/Risk Assessment -->
+    <div class="form-section">
+        <h4>⚠️ Safety & Risk Assessment</h4>
+        <p class="helper-text">Identify any safety concerns for the home visit</p>
+
+        <div class="checkbox-group">
+            <label class="checkbox-item">
+                <input type="checkbox" id="aggressiveAnimals_<%= casePin %>" name="safety">
+                <span>Aggressive animals at property</span>
+            </label>
+
+            <label class="checkbox-item">
+                <input type="checkbox" id="mentalHealth_<%= casePin %>" name="safety" onchange="toggleMentalHealthBanner('<%= casePin %>')">
+                <span>Client has mental health condition requiring additional support</span>
+            </label>
+
+            <label class="checkbox-item">
+                <input type="checkbox" id="accessIssues_<%= casePin %>" name="safety">
+                <span>Property access difficulties (stairs, narrow doorways, etc.)</span>
+            </label>
+
+            <label class="checkbox-item">
+                <input type="checkbox" id="otherRisks_<%= casePin %>" name="safety" onchange="toggleOtherRisksDetail('<%= casePin %>')">
+                <span>Other safety concerns</span>
+            </label>
+        </div>
+
+        <div id="otherRisksDetail_<%= casePin %>" style="display: none; margin-top: 12px;">
+            <textarea
+                id="otherRisksText_<%= casePin %>"
+                placeholder="Please describe other safety concerns..."
+                rows="2"
+            ></textarea>
+        </div>
+
+        <div class="info-banner" id="mentalHealthBanner_<%= casePin %>" style="display: none;">
+            ℹ️ <strong>Recommendation:</strong> Consider arranging for another healthcare professional to accompany you on this visit.
+        </div>
+    </div>
+
+    <!-- Section 6: What Happens Next -->
+    <div class="what-happens-next">
+        <h4>ℹ️ What Happens Next</h4>
+
+        <div class="info-card" id="bookingSuccessInfo_<%= casePin %>" style="display: none;">
+            <p><strong>After booking the INA visit:</strong></p>
+            <ul>
+                <li>Client will receive email confirmation with visit details</li>
+                <li>You'll receive calendar reminder 24 hours before visit</li>
+                <li>INA Checklist will unlock (day-before preparation)</li>
+                <li>Case progresses to Stage 5: INA Visit Scheduled (35%)</li>
+            </ul>
+        </div>
+
+        <div class="info-card" id="followupInfo_<%= casePin %>" style="display: none;">
+            <p><strong>Follow-up actions:</strong></p>
+            <ul>
+                <li>Schedule next contact attempt</li>
+                <li>Set reminder for follow-up call</li>
+                <li>Case remains at Stage 2 until booking confirmed</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+        <button class="btn btn-secondary" onclick="saveDraftPreINA('<%= casePin %>')">
+            💾 Save Draft
+        </button>
+
+        <button class="btn btn-primary" onclick="submitPreINA('<%= casePin %>')" id="submitBtn_<%= casePin %>" disabled>
+            ✅ Complete Pre-INA Contact
+        </button>
+    </div>
+</div>
+
+<script>
+    // Set today's date by default
+    (function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('callDate_<%= casePin %>').value = today;
+    })();
+
+    // Select outcome function
+    function selectOutcome(casePin, outcome) {
+        // Clear previous selection
+        const form = document.querySelector(`[data-case-pin="${casePin}"]`);
+        form.querySelectorAll('.outcome-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Mark selected
+        event.target.classList.add('active');
+
+        // Show/hide conditional sections
+        const inaBookingSection = document.getElementById(`inaBookingSection_${casePin}`);
+        const bookingSuccessInfo = document.getElementById(`bookingSuccessInfo_${casePin}`);
+        const followupInfo = document.getElementById(`followupInfo_${casePin}`);
+
+        if (outcome === 'reached-booking') {
+            inaBookingSection.style.display = 'block';
+            bookingSuccessInfo.style.display = 'block';
+            followupInfo.style.display = 'none';
+        } else if (outcome === 'reached-followup') {
+            inaBookingSection.style.display = 'none';
+            bookingSuccessInfo.style.display = 'none';
+            followupInfo.style.display = 'block';
+        } else {
+            inaBookingSection.style.display = 'none';
+            bookingSuccessInfo.style.display = 'none';
+            followupInfo.style.display = 'none';
+        }
+
+        // Validate form
+        validatePreINAForm(casePin);
+    }
+
+    // Toggle mental health banner
+    function toggleMentalHealthBanner(casePin) {
+        const checkbox = document.getElementById(`mentalHealth_${casePin}`);
+        const banner = document.getElementById(`mentalHealthBanner_${casePin}`);
+        banner.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    // Toggle other risks detail
+    function toggleOtherRisksDetail(casePin) {
+        const checkbox = document.getElementById(`otherRisks_${casePin}`);
+        const detail = document.getElementById(`otherRisksDetail_${casePin}`);
+        detail.style.display = checkbox.checked ? 'block' : 'none';
+    }
+
+    // Form validation
+    function validatePreINAForm(casePin) {
+        const callDate = document.getElementById(`callDate_${casePin}`).value;
+        const callTime = document.getElementById(`callTime_${casePin}`).value;
+        const callDuration = document.getElementById(`callDuration_${casePin}`).value;
+        const selectedOutcome = document.querySelector(`[data-case-pin="${casePin}"] .outcome-btn.active`);
+
+        let isValid = callDate && callTime && callDuration && selectedOutcome;
+
+        // If booking made, require visit details
+        if (selectedOutcome?.dataset.outcome === 'reached-booking') {
+            const visitDate = document.getElementById(`visitDate_${casePin}`).value;
+            const visitTime = document.getElementById(`visitTime_${casePin}`).value;
+            isValid = isValid && visitDate && visitTime;
+        }
+
+        document.getElementById(`submitBtn_${casePin}`).disabled = !isValid;
+    }
+
+    // Add input listeners for validation
+    (function() {
+        const casePin = '<%= casePin %>';
+        const inputs = [
+            `callDate_${casePin}`,
+            `callTime_${casePin}`,
+            `callDuration_${casePin}`,
+            `visitDate_${casePin}`,
+            `visitTime_${casePin}`
+        ];
+
+        inputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', () => validatePreINAForm(casePin));
+                element.addEventListener('change', () => validatePreINAForm(casePin));
+            }
+        });
+    })();
+
+    // Save draft function
+    async function saveDraftPreINA(casePin) {
+        const formData = collectPreINAFormData(casePin);
+        formData.isDraft = true;
+
+        try {
+            const response = await fetch('/api/case-managers/pre-ina-contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('💾 Draft saved successfully!');
+            }
+        } catch (error) {
+            console.error('Failed to save draft:', error);
+            alert('Failed to save draft. Please try again.');
+        }
+    }
+
+    // Submit function
+    async function submitPreINA(casePin) {
+        const formData = collectPreINAFormData(casePin);
+        formData.isDraft = false;
+
+        try {
+            const response = await fetch('/api/case-managers/pre-ina-contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('✅ Pre-INA contact completed successfully!');
+
+                // Refresh case list
+                window.parent.dispatchEvent(new CustomEvent('refreshCases'));
+
+                // Close expanded details
+                const expandBtn = document.querySelector(`[onclick="toggleCaseDetails('${casePin}')"]`);
+                if (expandBtn) expandBtn.click();
+            }
+        } catch (error) {
+            console.error('Failed to submit Pre-INA contact:', error);
+            alert('Failed to submit. Please try again.');
+        }
+    }
+
+    // Collect form data
+    function collectPreINAFormData(casePin) {
+        const selectedOutcome = document.querySelector(`[data-case-pin="${casePin}"] .outcome-btn.active`);
+
+        const formData = {
+            casePin: casePin,
+            callDetails: {
+                date: document.getElementById(`callDate_${casePin}`).value,
+                time: document.getElementById(`callTime_${casePin}`).value,
+                duration: parseInt(document.getElementById(`callDuration_${casePin}`).value)
+            },
+            callOutcome: selectedOutcome?.dataset.outcome || null,
+            callNotes: document.getElementById(`callNotes_${casePin}`).value,
+            safetyAssessment: {
+                aggressiveAnimals: document.getElementById(`aggressiveAnimals_${casePin}`).checked,
+                mentalHealth: document.getElementById(`mentalHealth_${casePin}`).checked,
+                accessIssues: document.getElementById(`accessIssues_${casePin}`).checked,
+                other: document.getElementById(`otherRisks_${casePin}`).checked,
+                otherDetails: document.getElementById(`otherRisksText_${casePin}`).value
+            }
+        };
+
+        // If booking made, include visit details
+        if (selectedOutcome?.dataset.outcome === 'reached-booking') {
+            formData.inaVisit = {
+                date: document.getElementById(`visitDate_${casePin}`).value,
+                time: document.getElementById(`visitTime_${casePin}`).value,
+                location: document.getElementById(`visitLocation_${casePin}`).value
+            };
+        }
+
+        return formData;
+    }
+</script>

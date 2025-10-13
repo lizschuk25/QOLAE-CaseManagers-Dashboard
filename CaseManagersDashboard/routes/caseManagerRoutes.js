@@ -25,10 +25,22 @@ export default async function (fastify, opts) {
 
   /**
    * GET /case-managers-dashboard
-   * Return to main Case Managers Dashboard
+   * Display Case Managers Dashboard with role-based rendering
+   *
+   * Role Types:
+   * - 'management' (Liz): All 4 tabs (My Cases, Reader Mgmt, Approval Queue, CM Mgmt)
+   * - 'operational' (Contractor CMs): My Cases tab only
    */
   fastify.get('/case-managers-dashboard', async (req, reply) => {
-    return reply.view('casemanagers-dashboard');
+    // TODO: Implement authentication to get actual user data
+    // For now, default to management role (Liz)
+    const userData = {
+      cmName: 'Liz',
+      userRole: 'management', // 'management' or 'operational'
+      pin: 'CM-002690'
+    };
+
+    return reply.view('case-managers-dashboard', userData);
   });
 
   // ==============================================
@@ -101,7 +113,86 @@ export default async function (fastify, opts) {
   });
 
   // ==============================================
-  // LOCATION BLOCK 5: HEALTH CHECK
+  // LOCATION BLOCK 5: AUTO-ASSIGN CASE
+  // ==============================================
+
+  /**
+   * POST /api/case-managers/assign-case-auto
+   * Auto-assign case to CM with lowest workload
+   * Triggered when Lawyer completes Case Referral form
+   *
+   * Body: {
+   *   casePin: string,
+   *   lawyerPin: string,
+   *   lawyerName: string,
+   *   clientName: string,
+   *   caseType: string,
+   *   referralData: object
+   * }
+   * Returns: {
+   *   success: boolean,
+   *   message: string,
+   *   assignedCM: { cmId, cmName, cmPin, currentWorkload },
+   *   caseDetails: { caseId, casePin, status, stage, stageLabel }
+   * }
+   */
+  fastify.post('/api/case-managers/assign-case-auto', async (req, reply) => {
+    return await CaseManagersController.autoAssignCase(req, reply);
+  });
+
+  // ==============================================
+  // LOCATION BLOCK 6: CASES WITH PRIORITY ALGORITHM
+  // ==============================================
+
+  /**
+   * GET /api/case-managers/cases-with-priority
+   * Get all cases with auto-calculated priority indicators
+   *
+   * Query Params:
+   * - cmPin (optional): Filter by Case Manager PIN
+   * - filter (optional): 'urgent' | 'today' | 'ready' | 'pending'
+   *
+   * Returns: {
+   *   success: boolean,
+   *   cases: [{
+   *     casePin, clientName, assignedCM, status,
+   *     workflowStage, stageLabel, progressPercent,
+   *     priority: { level, color, emoji, label, days },
+   *     daysInStage, stageUpdatedAt, createdAt
+   *   }],
+   *   count: number
+   * }
+   */
+  fastify.get('/api/case-managers/cases-with-priority', async (req, reply) => {
+    return await CaseManagersController.getCasesWithPriority(req, reply);
+  });
+
+  // ==============================================
+  // LOCATION BLOCK 7: BADGE COUNTS (AUTO-REFRESH)
+  // ==============================================
+
+  /**
+   * GET /api/case-managers/badge-counts
+   * Get real-time counts for Action Center badges
+   * Auto-refreshes every 30 seconds on dashboard
+   *
+   * Returns: {
+   *   success: boolean,
+   *   counts: {
+   *     urgent: number,     // Cases stuck >5 days
+   *     today: number,      // INA visits today
+   *     ready: number,      // Consents received
+   *     pending: number,    // Awaiting reader assignment
+   *     approvalQueue: number  // Payment + closure approvals
+   *   }
+   * }
+   */
+  fastify.get('/api/case-managers/badge-counts', async (req, reply) => {
+    return await CaseManagersController.getBadgeCounts(req, reply);
+  });
+
+  // ==============================================
+  // LOCATION BLOCK 7: HEALTH CHECK
   // ==============================================
 
   /**
