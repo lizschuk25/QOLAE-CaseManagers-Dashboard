@@ -10,7 +10,8 @@
 | **Phase 1** | 1-6 | 🔐 Management Only | Marketing, Lawyer Registration, Follow-ups | Ongoing |
 | **Phase 2** | 8-9 | 🔐 Management Only | Case Allocation, Payment Oversight | 5-10 min/case |
 | **Phase 3** | 10-11 | 👥 Delegatable | Client Contact, Data Review | 30-45 min/case |
-| **Phase 4** | 12, 12a-12b | 🔐 Management Only | Reader Registration, HR Compliance | 2-3 hrs/reader |
+| **Phase 4** | 12 | 🔐 Management Only | Reader Registration | 15-30 min/reader |
+| **HR Compliance** | 12a-12d | 🔐 Delegated System | HR Compliance Management | Via HRCompliance Dashboard |
 | **Phase 5** | 13-18 | 👥 Delegatable | INA Assessment, Report Writing | 8-12 hrs/case |
 | **Phase 6** | 19-21 | 🔐 Management Only | Reader Payments, Final Approvals | 30 min/case |
 
@@ -27,7 +28,7 @@
 ---
 
 ## 🔐 PHASE 1: BUSINESS DEVELOPMENT & MARKETING
-**[MANAGEMENT ONLY - LIZ]** (Steps 1-6)
+**[MANAGEMENT ONLY - LIZ]** (Steps 1-6 Admin-Dashboard admin.qolae.com)
 
 **1. Marketing & Outreach** 🔐
 - Liz reaches out to Law Firms through the Web, Telephone or email
@@ -41,7 +42,7 @@
 
 **3. Lawyers Tracking Database Management** 🔐
 - Status updates, initial contact date, follow up fields, next steps, notes
-- Document repository for Liz's CV, Addenda and Terms of Business
+- Document repository for Liz's CV, Case Studies and Terms of Business
 
 **4. Email PIN Generation** 🔐
 - Tick box within LTDb generates clickable PIN in introductory email letter
@@ -74,14 +75,14 @@
 **[DELEGATABLE TO CASE MANAGERS]**
 
 **10. Client Data Access & Review** 👥
-- Once Lawyer enters client details into Consent form, Case Manager has access
+- Once Lawyer enters client details into Consent form, Case Manager has access to Clients email and telephone number
 - Client data auto-populates: INA Referral, INA form, CM's INA Checklist, INA Report
 - Data appears on allocated Case Manager's Workspace
 
 **11. Initial Client Contact** 👥
 - Case Manager immediately calls Client (Service User/Patient)
 - Introduces themselves, fields questions/concerns about Consent form
-- Provisionally books INA visit appointment in calendar on CaseManagers Dashboard
+- Provisionally books INA visit appointment in calendar on CaseManagers Dashboard, can enter information in the INA form during that phone call as well. 
 
 ---
 
@@ -89,7 +90,7 @@
 **[MANAGEMENT ONLY - LIZ]**
 
 **12. Reader Registration** 🔐
-- Liz registers Readers in her workspace
+- Liz registers Readers in the HRCompliance
 - Once Consent is sent off, ticks box that auto-generates reader-specific PIN
 - Generates Customised NDA attachment sent in Introductory Email to Readers
 - Similar workflow to Admin-Dashboard's "Ready to Generate Documents" and "Send Email"
@@ -99,59 +100,33 @@ NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digital
 
 ---
 
-## 🔐 READERS COMPLIANCE REVIEW (New HR Workflow)
-**[MANAGEMENT ONLY - LIZ]**
+## 🔐 HR COMPLIANCE & OPERATIONS MANAGEMENT
+**[DELEGATED TO HRCOMPLIANCE DASHBOARD - hrcompliance.qolae.com]**
 
-**12a. Reader Compliance Submission:**
-- After the Reader completes their initial login (PIN, 2FA, password creation), they are redirected to the **HR Compliance Gate** (`readers.qolae.com/compliance`)
-- Reader must submit:
-  - **CV (PDF upload)**
-  - **2 References:** 1 professional + 1 character (referee contact details only at this stage)
-- On submission, Liz receives a **notification** in her Case Managers Dashboard
-- Status badge appears: "[Reader Name] - Compliance Submitted" (pending)
-- Reader cannot access their dashboard until compliance is approved
+**12a. HR Compliance System Overview:**
+- **Location**: Dedicated HRCompliance Dashboard (`hrcompliance.qolae.com`)
+- **Access**: Management Only (Liz) - Link/button from CaseManagersDashboard
+- **Scope**: All QOLAE personnel compliance (Readers, New Starters, Case Managers, Admin)
+- **Database**: Separate `qolae_hrcompliance` database for security
 
-**12b. Liz's Compliance Review Process:**
+**12b. Reader Compliance Process:**
+- **Reader Submission**: Readers submit CV + reference details via Readers Dashboard
+- **Liz's Review**: Access HRCompliance Dashboard to review submissions
+- **Reference Collection**: Flexible process (phone/email) with digital signatures
+- **Final Approval**: One-click approval activates reader accounts
+- **Flexible Access**: Readers can work while references collected
 
-**Step 1: Initial Review**
-- Click "Review" button on Case Managers Dashboard
-- Modal opens showing:
-  - Reader's CV (can download/view)
-  - Professional reference details (name, title, organisation, email, phone, relationship)
-  - Character reference details (name, relationship, email, phone, duration known)
+**12c. New Starters Compliance Process:**
+- **Registration**: Liz creates new starter records with ID PIN generation
+- **Comprehensive Documents**: Application forms, identity docs, qualifications, DBS/PVG
+- **Professional Verification**: PIN/GMC number verification for medical personnel
+- **Flexible Workspace Access**: Immediate access with greyed-out areas until approved
 
-**Step 2: Reference Collection (Flexible Process)**
-
-**Option A - Phone Reference (Preferred):**
-1. Liz calls the referee
-2. Liz fills out `reference-form.ejs` with referee's answers during the call
-3. System automatically emails the **pre-filled** form to referee for review and digital signature
-4. Referee receives email → reviews pre-filled form (takes 30 seconds) → signs digitally → submits
-5. Signed reference is saved to `qolae_hrcompliance` database
-6. Liz receives notification: "Reference received from [Referee Name]"
-
-**Option B - Email Reference (if referee prefers):**
-1. Referee prefers not to have phone call
-2. Liz sends blank `reference-form.ejs` via system email
-3. Referee fills out entire form themselves and signs digitally
-4. Signed reference is saved to `qolae_hrcompliance` database
-5. Liz receives notification: "Reference received from [Referee Name]"
-
-**Step 3: Final Approval**
-- Once **both references** are received and signed
-- Liz reviews all compliance documents (CV + 2 signed references)
-- Liz clicks "Approve Compliance"
-- Actions triggered:
-  - Compliance record is **locked** in `qolae_hrcompliance` database (audit-ready)
-  - Reader's account is fully activated
-  - Reader receives email: "Your compliance has been approved. You can now access your dashboard."
-- Status updates to: "[Reader Name] - Compliance Approved ✓"
-
-**Database & Security:**
-- All HR compliance data (CVs, references) stored in separate `qolae_hrcompliance` database
-- Only Case Managers have access to HR compliance records
-- Audit log tracks all access: who viewed/downloaded/approved what and when
-- Readers do NOT have access to their own compliance records from their dashboard
+**12d. Integration Points:**
+- **CaseManagersDashboard**: Link to HRCompliance Dashboard, status badges
+- **ReadersDashboard**: Compliance submission, approval notifications
+- **WebSocket Communication**: Real-time updates across all dashboards
+- **Documents Library**: Secure document storage and viewing (no downloads)
 
 **Next Login:**
 - Reader logs in → automatically redirected to their Readers Dashboard (no compliance gate)
@@ -228,7 +203,8 @@ NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digital
 | **Phase 1** | 🔐 Management Only | 1-6 | Marketing, Lawyer Registration, Follow-ups |
 | **Phase 2** | 🔐 Management Only | 8-9 | Case Allocation, Payment Oversight |
 | **Phase 3** | 👥 Delegatable | 10-11 | Client Contact, Data Review |
-| **Phase 4** | 🔐 Management Only | 12, 12a-12b | Reader Registration, HR Compliance |
+| **Phase 4** | 🔐 Management Only | 12 | Reader Registration |
+| **HR Compliance** | 🔐 Delegated System | 12a-12d | HR Compliance Management |
 | **Phase 5** | 👥 Delegatable | 13-18 | INA Assessment, Medical Research, Report Writing |
 | **Phase 6** | 🔐 Management Only | 19-21 | Reader Payments, Final Approvals, Invoicing |
 
@@ -236,4 +212,4 @@ NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digital
 - 🔐 = Management Only (Liz) - Strategic, Financial, HR, Business Development
 - 👥 = Delegatable to Case Managers - Operational, Clinical, Administrative
 
-**Scalability Note:** As QOLAE grows, qualified Case Managers can be hired to handle Phases 3 & 5 (~60% of operational workflow), while Liz retains control over strategic business decisions, financial approvals, and HR compliance. 
+**Scalability Note:** As QOLAE grows, qualified Case Managers can be hired to handle Phases 3 & 5 (~60% of operational workflow), while Liz retains control over strategic business decisions, financial approvals, and HR compliance management through the dedicated HRCompliance Dashboard. 
