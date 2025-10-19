@@ -273,6 +273,20 @@
             display: block;
         }
 
+        /* ===== ACCESS CONTROL - RESTRICTED FEATURES ===== */
+        /* Applied when compliance not approved (LIMITED access) */
+        .feature-restricted {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed !important;
+            background-color: #f0f0f0 !important;
+        }
+
+        .feature-restricted:hover {
+            background-color: #f0f0f0 !important; /* No hover effect for disabled */
+            transform: none !important;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
             .action-cards {
@@ -669,6 +683,25 @@
                     refreshBadgeCounts();
                 });
 
+                // Compliance approved event - New starter gets full access
+                socket.on('compliance_approved', (data) => {
+                    // Check if this notification is for the current user
+                    const userPin = getCurrentUserPin();
+
+                    if (data.pin === userPin) {
+                        console.log('[WebSocket] 🎉 Compliance approved for:', data.pin);
+                        showNotification({
+                            type: 'success',
+                            title: 'Compliance Approved! 🎉',
+                            message: 'You now have full workspace access.',
+                            duration: 5000
+                        });
+
+                        // Refresh workspace features to unlock full access
+                        refreshAccessControl();
+                    }
+                });
+
                 // Disconnection
                 socket.on('disconnect', (reason) => {
                     isConnected = false;
@@ -749,6 +782,161 @@
                 console.log('[WebSocket] Disconnected on page unload');
             }
         });
+
+        // ==========================================
+        // LOCATION BLOCK 6: ACCESS CONTROL SYSTEM
+        // Frontend feature greying for LIMITED access
+        // ==========================================
+
+        /**
+         * Get current user PIN from session/cookie
+         * @returns {string|null} Case Manager PIN (e.g., CM-002690)
+         */
+        function getCurrentUserPin() {
+            // Try to get PIN from cookie first
+            const pin = getCookie('qolae_cm_pin');
+            if (pin) return pin;
+
+            // Fallback: Try from EJS variable if available
+            const ejsPin = '<%= typeof cmPin !== "undefined" ? cmPin : "" %>';
+            if (ejsPin) return ejsPin;
+
+            console.warn('[Access Control] No user PIN found');
+            return null;
+        }
+
+        /**
+         * Initialize access control on page load
+         * Calls workspace features API to determine access level
+         */
+        async function initializeAccessControl() {
+            try {
+                const pin = getCurrentUserPin();
+                if (!pin) {
+                    console.error('[Access Control] Cannot initialize - no PIN found');
+                    return;
+                }
+
+                console.log('[Access Control] Fetching features for PIN:', pin);
+
+                const response = await fetch(`/api/workspace/features?pin=${pin}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('[Access Control] Access Level:', data.accessLevel);
+                    console.log('[Access Control] Features:', data.features);
+
+                    // Apply access control based on features
+                    applyAccessControl(data.features);
+                } else {
+                    console.error('[Access Control] Failed to fetch features:', data.error);
+                }
+            } catch (error) {
+                console.error('[Access Control] Error initializing:', error);
+            }
+        }
+
+        /**
+         * Apply access control to dashboard elements
+         * Disables/greys out features based on access level
+         * @param {Object} features - Feature access object from API
+         */
+        function applyAccessControl(features) {
+            // Feature mapping to element IDs
+            const featureElements = {
+                canCreateCases: ['createCaseBtn', 'create-case-action'],
+                canGenerateReports: ['generateReportsBtn'],
+                canAssignReaders: ['assignReadersBtn'],
+                canViewFinances: ['viewFinancesBtn', 'view-finances-tab'],
+                canAccessSettings: ['accessSettingsBtn', 'settings-tab']
+            };
+
+            // Apply restrictions to static elements
+            Object.keys(featureElements).forEach(featureName => {
+                const hasAccess = features[featureName];
+                const elementIds = featureElements[featureName];
+
+                elementIds.forEach(elementId => {
+                    greyOutElement(elementId, hasAccess);
+                });
+            });
+
+            // Apply restrictions to dynamic elements (with prefixes like "assign-readers-action-INA-001")
+            // These are generated dynamically per case in the quick actions
+            const dynamicFeatures = {
+                canGenerateReports: 'generate-reports-action-',
+                canAssignReaders: 'assign-readers-action-'
+            };
+
+            Object.keys(dynamicFeatures).forEach(featureName => {
+                const hasAccess = features[featureName];
+                const prefix = dynamicFeatures[featureName];
+
+                // Find all elements with this prefix
+                document.querySelectorAll(`[id^="${prefix}"]`).forEach(element => {
+                    greyOutElement(element.id, hasAccess);
+                });
+            });
+
+            console.log('[Access Control] Applied restrictions for', Object.keys(features).length, 'features');
+        }
+
+        /**
+         * Grey out a single element if access is restricted
+         * @param {string} elementId - DOM element ID
+         * @param {boolean} canAccess - Whether user has access (true = enabled, false = greyed)
+         */
+        function greyOutElement(elementId, canAccess) {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                // Element doesn't exist - likely not on current page/tab
+                return;
+            }
+
+            if (!canAccess) {
+                // Disable the element
+                element.classList.add('feature-restricted');
+                element.setAttribute('disabled', 'disabled');
+                element.style.opacity = '0.5';
+                element.style.pointerEvents = 'none';
+                element.style.cursor = 'not-allowed';
+                element.title = 'Available once compliance is approved';
+
+                console.log('[Access Control] Greyed out element:', elementId);
+            } else {
+                // Ensure element is enabled (in case of re-initialization)
+                element.classList.remove('feature-restricted');
+                element.removeAttribute('disabled');
+                element.style.opacity = '1';
+                element.style.pointerEvents = 'auto';
+                element.style.cursor = 'pointer';
+                element.title = '';
+            }
+        }
+
+        /**
+         * Re-check access control (called after compliance approval notification)
+         */
+        function refreshAccessControl() {
+            console.log('[Access Control] Refreshing access control...');
+            initializeAccessControl();
+        }
+
+        // Initialize access control when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeAccessControl();
+        });
+
+        // Listen for compliance approval notification via WebSocket
+        if (socket) {
+            socket.on('compliance:approved', (data) => {
+                console.log('[WebSocket] 🎉 Compliance approved! Refreshing access...');
+                showNotification('Your compliance has been approved! Full access granted.', 'success');
+
+                // Refresh access control to enable all features
+                refreshAccessControl();
+            });
+        }
     </script>
 </body>
 </html>

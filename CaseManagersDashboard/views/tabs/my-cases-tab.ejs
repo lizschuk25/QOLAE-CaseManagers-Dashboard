@@ -1440,11 +1440,11 @@
             <div class="quick-actions">
                 <button class="action-btn">📞 Contact Client</button>
                 <button class="action-btn">📧 Email Lawyer</button>
-                <button class="action-btn" ${!internalReviewComplete ? 'disabled' : ''}>👤 Assign 1st Reader</button>
+                <button class="action-btn" id="assign-readers-action-${caseData.casePin}" ${!internalReviewComplete ? 'disabled' : ''}>👤 Assign 1st Reader</button>
                 <button class="action-btn" ${!consentReceived ? 'disabled' : ''}>📄 View Medical Notes</button>
                 <button class="action-btn">🗓️ Schedule Follow-up</button>
                 <button class="action-btn">💬 Add Note</button>
-                <button class="action-btn" ${caseData.workflowStage < 7 ? 'disabled' : ''} onclick="openResearchWorkspace('${caseData.casePin}')">📚 Research Workspace</button>
+                <button class="action-btn" id="generate-reports-action-${caseData.casePin}" ${caseData.workflowStage < 7 ? 'disabled' : ''} onclick="openResearchWorkspace('${caseData.casePin}')">📚 Research Workspace</button>
                 <button class="action-btn" ${caseData.workflowStage < 8 ? 'disabled' : ''} onclick="openReportEditor('${caseData.casePin}')">✍️ Report Editor</button>
                 <button class="action-btn" onclick="alert('Mark stage complete - Coming soon!')">✅ Mark Stage Complete</button>
             </div>
