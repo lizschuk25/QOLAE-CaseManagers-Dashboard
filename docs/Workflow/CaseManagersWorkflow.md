@@ -1,4 +1,4 @@
-# QOLAE Case Managers' Workflow
+# QOLAE Case Managers'/Liz's Workflow
 **Role-Based Access Control: Management vs Operational Tasks**
 
 ---
@@ -23,7 +23,7 @@
 
 **Visual Workflow Diagram:** See [CaseManagersWorkflowDiagram.md](./CaseManagersWorkflowDiagram.md)
 
-**Technical Implementation:** See [DailyWorkingDocument.md](../DailyWorkingDocument.md) (Dashboard build tasks)
+**Technical Implementation:** See [CaseManagersWorkflow.md] 
 
 ---
 
@@ -67,7 +67,7 @@
 
 **9. Payment Notification** 🔐
 - Liz receives notification when payment is made on portal
-- Financial oversight responsibility
+- Case Begins at this point.
 
 ---
 
@@ -90,7 +90,7 @@
 **[MANAGEMENT ONLY - LIZ]**
 
 **12. Reader Registration** 🔐
-- Liz registers Readers in the HRCompliance
+- Liz registers Readers in the HRCompliance & Operations Dashboard
 - Once Consent is sent off, ticks box that auto-generates reader-specific PIN
 - Generates Customised NDA attachment sent in Introductory Email to Readers
 - Similar workflow to Admin-Dashboard's "Ready to Generate Documents" and "Send Email"
@@ -100,39 +100,7 @@ NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digital
 
 ---
 
-## 🔐 HR COMPLIANCE & OPERATIONS MANAGEMENT
-**[DELEGATED TO HRCOMPLIANCE DASHBOARD - hrcompliance.qolae.com]**
 
-**12a. HR Compliance System Overview:**
-- **Location**: Dedicated HRCompliance Dashboard (`hrcompliance.qolae.com`)
-- **Access**: Management Only (Liz) - Link/button from CaseManagersDashboard
-- **Scope**: All QOLAE personnel compliance (Readers, New Starters, Case Managers, Admin)
-- **Database**: Separate `qolae_hrcompliance` database for security
-
-**12b. Reader Compliance Process:**
-- **Reader Submission**: Readers submit CV + reference details via Readers Dashboard
-- **Liz's Review**: Access HRCompliance Dashboard to review submissions
-- **Reference Collection**: Flexible process (phone/email) with digital signatures
-- **Final Approval**: One-click approval activates reader accounts
-- **Flexible Access**: Readers can work while references collected
-
-**12c. New Starters Compliance Process:**
-- **Registration**: Liz creates new starter records with ID PIN generation
-- **Comprehensive Documents**: Application forms, identity docs, qualifications, DBS/PVG
-- **Professional Verification**: PIN/GMC number verification for medical personnel
-- **Flexible Workspace Access**: Immediate access with greyed-out areas until approved
-
-**12d. Integration Points:**
-- **CaseManagersDashboard**: Link to HRCompliance Dashboard, status badges
-- **ReadersDashboard**: Compliance submission, approval notifications
-- **WebSocket Communication**: Real-time updates across all dashboards
-- **Documents Library**: Secure document storage and viewing (no downloads)
-
-**Next Login:**
-- Reader logs in → automatically redirected to their Readers Dashboard (no compliance gate)
-- Reader can now access NDA workflow and begin their tasks
-
----
 
 ## 👥 PHASE 5: INA ASSESSMENT & CLINICAL WORK
 **[DELEGATABLE TO CASE MANAGERS]**
@@ -168,7 +136,7 @@ NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digital
 
 ---
 
-## 🔐 PHASE 6: REVIEW PROCESS & FINANCIAL APPROVALS
+## 🔐 PHASE 6: REVIEW PROCESS & FINANCIAL APPROVALS - THIS IS HRCOMPLIANCE & OPERATIONS DASHBOARD WORKFLOW
 **[MANAGEMENT ONLY - LIZ]**
 
 **19. First Reader Review & Payment Approval** 🔐
