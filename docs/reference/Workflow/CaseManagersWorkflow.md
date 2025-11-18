@@ -50,6 +50,9 @@
 **5. Document Package Sending** 🔐
 - CV, TOB and Case Studies sent with Introductory letter
 - Triggered when 'Send documents' box is ticked
+- "Push to Central-Repository saves the customised 
+TOB.pdf to central-repository/final-tob folder/directory for use
+in Lawyers-Dashboard
 
 **6. Follow-up Management** 🔐
 - Liz uses LTDb for ongoing relationship management
@@ -61,7 +64,7 @@
 
 **8. Case Assignment Decision** 🔐
 - When Lawyers engage QOLAE, they click email hyperlinked PIN and commence workflow
-- Lawyers sign TOB and make payment
+- Lawyers sign TOB, fill out Consent form to send to their Client or use the POA modality and make payment
 - System notifies Liz/other CMs → **Liz must select** who gets the case
 - Strategic workload distribution decision
 
@@ -71,8 +74,7 @@
 
 ---
 
-## 👥 PHASE 3: OPERATIONAL CASE MANAGEMENT
-**[DELEGATABLE TO CASE MANAGERS]**
+## 👥 PHASE 3: OPERATIONAL CASE MANAGEMENT (ONLY LIZ HAS ACCESS TO HRCOMPLIANCE DASHBOARD!!!!!!)
 
 **10. Client Data Access & Review** 👥
 - Once Lawyer enters client details into Consent form, Case Manager has access to Clients email and telephone number
@@ -90,17 +92,16 @@
 **[MANAGEMENT ONLY - LIZ]**
 
 **12. Reader Registration** 🔐
-- Liz registers Readers in the HRCompliance & Operations Dashboard
+- Liz registers Readers in the HRCompliance & Operations Dashboard 
+(she can do this and the following at anytime in preparation for seamless workflow)
 - Once Consent is sent off, ticks box that auto-generates reader-specific PIN
 - Generates Customised NDA attachment sent in Introductory Email to Readers
 - Similar workflow to Admin-Dashboard's "Ready to Generate Documents" and "Send Email"
 - Copy of NDA saved in central-repository/temp, ready for digital signing 
 
-NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digitally on the portal for the Readers once they log on to the system and have gone through the 2 way FA authentication system and compliance requirements. Liz's automatic signature will also be applied.
+NOTE THAT READER WORKFLOW IS SEPARATE. NDA is available for signing digitally on the portal for the Readers once they log on to the system and have gone through the 2 way FA authentication system and compliance requirements. Liz's automatic signature will be added to the NDA.
 
 ---
-
-
 
 ## 👥 PHASE 5: INA ASSESSMENT & CLINICAL WORK
 **[DELEGATABLE TO CASE MANAGERS]**
@@ -133,7 +134,6 @@ NOTE THAT READER WORKFLOW IS SEPARATE. NDA will be available for signing digital
 **18. INA Report Completion** 👥
 - Case Manager completes comprehensive report
 - Includes recommendations for client's Rehabilitation and overall healthcare needs
-
 ---
 
 ## 🔐 PHASE 6: REVIEW PROCESS & FINANCIAL APPROVALS - THIS IS HRCOMPLIANCE & OPERATIONS DASHBOARD WORKFLOW

@@ -4,7 +4,15 @@
 // Purpose: Return feature access levels based on compliance status
 // Route: GET /api/workspace/features?pin=NS-XX123456
 // ==============================================
-static async getWorkspaceFeatures(request, reply) {
+
+import { Pool } from 'pg';
+
+// Database connection
+const caseManagersDb = new Pool({
+  connectionString: process.env.CASEMANAGERS_DATABASE_URL
+});
+
+export async function getWorkspaceFeatures(request, reply) {
   try {
     const { pin } = request.query;
 
@@ -18,9 +26,8 @@ static async getWorkspaceFeatures(request, reply) {
 
     console.log(`🔍 Getting workspace features for PIN: ${pin}`);
 
-    // Import database pool (will be available in class context)
     // Query case_managers table for compliance status
-    const caseManagerResult = await this.caseManagersDb.query(
+    const caseManagerResult = await caseManagersDb.query(
       'SELECT compliance_approved, status FROM case_managers WHERE pin = $1',
       [pin]
     );
