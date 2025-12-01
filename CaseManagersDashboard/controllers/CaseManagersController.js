@@ -121,27 +121,27 @@ async function verifyMedicalRegistration(registrationBody, registrationNumber) {
 async function calculateCMWorkload() {
   try {
     // Get all active case managers
-    // TODO: This will need to query a case_managers table
+    // TODO: This will need to query a caseManagers table
     // For now, returning mock data structure
     const caseManagers = [
-      { cm_id: 'cm-1', cm_name: 'Emma Thompson', pin: 'CM-002691' },
-      { cm_id: 'cm-2', cm_name: 'David Park', pin: 'CM-002692' },
-      { cm_id: 'cm-3', cm_name: 'Rachel Green', pin: 'CM-002693' }
+      { cmId: 'cm-1', cmName: 'Emma Thompson', pin: 'CM-002691' },
+      { cmId: 'cm-2', cmName: 'David Park', pin: 'CM-002692' },
+      { cmId: 'cm-3', cmName: 'Rachel Green', pin: 'CM-002693' }
     ];
 
     // Count active cases for each CM
     const workloadPromises = caseManagers.map(async (cm) => {
       const result = await caseManagersDb.query(
-        `SELECT COUNT(*) as case_count
+        `SELECT COUNT(*) as "caseCount"
          FROM cases
-         WHERE assigned_cm_pin = $1
-         AND case_status NOT IN ('closed', 'cancelled')`,
+         WHERE "assignedCmPin" = $1
+         AND "caseStatus" NOT IN ('closed', 'cancelled')`,
         [cm.pin]
       );
 
       return {
         ...cm,
-        activeCount: parseInt(result.rows[0].case_count) || 0
+        activeCount: parseInt(result.rows[0].caseCount) || 0
       };
     });
 
@@ -317,7 +317,7 @@ export default {
     }
 
     // Additional validation for medical readers
-    if (readerType === 'second_reader') {
+    if (readerType === 'secondReader') {
       if (!specialization || !registrationBody || !registrationNumber) {
         return reply.status(400).send({
           success: false,
@@ -335,28 +335,28 @@ export default {
 
     try {
       // Determine payment rate
-      const paymentRate = readerType === 'first_reader' ? 50.00 : 75.00;
+      const paymentRate = readerType === 'firstReader' ? 50.00 : 75.00;
 
       // Insert reader into qolae_readers database
       const result = await readersDb.query(
         `INSERT INTO readers (
-          reader_pin,
-          reader_name,
+          "readerPin",
+          "readerName",
           email,
           phone,
-          reader_type,
+          "readerType",
           specialization,
-          registration_body,
-          registration_number,
-          registration_verified,
-          registration_verified_at,
-          registration_verified_by,
-          payment_rate,
-          created_by,
-          created_at,
-          updated_at
+          "registrationBody",
+          "registrationNumber",
+          "registrationVerified",
+          "registrationVerifiedAt",
+          "registrationVerifiedBy",
+          "paymentRate",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        RETURNING id, reader_pin`,
+        RETURNING id, "readerPin"`,
         [
           readerPin,
           readerName,
@@ -435,7 +435,7 @@ export default {
       console.error('❌ Database error registering reader:', error);
 
       // Check for duplicate email
-      if (error.code === '23505' && error.constraint === 'readers_email_key') {
+      if (error.code === '23505' && error.constraint === 'readersEmailKey') {
         const errorMessage = 'A reader with this email address already exists.';
 
         if (isAjaxRequest(req)) {
@@ -451,7 +451,7 @@ export default {
       }
 
       // Check for duplicate PIN
-      if (error.code === '23505' && error.constraint === 'readers_reader_pin_key') {
+      if (error.code === '23505' && error.constraint === 'readersReaderPinKey') {
         const errorMessage = 'This PIN already exists. Please generate a new one.';
 
         if (isAjaxRequest(req)) {
@@ -521,26 +521,26 @@ export default {
 
       // Step 2: Select CM with lowest workload
       const assignedCM = workloads[0];
-      console.log(`✅ Selected CM: ${assignedCM.cm_name} (Current workload: ${assignedCM.activeCount} cases)`);
+      console.log(`✅ Selected CM: ${assignedCM.cmName} (Current workload: ${assignedCM.activeCount} cases)`);
 
       // Step 3: Create case record in cases table
       const caseResult = await caseManagersDb.query(
         `INSERT INTO cases (
-          case_pin,
-          lawyer_pin,
-          lawyer_name,
-          client_name,
-          case_type,
-          assigned_cm_pin,
-          assigned_cm_name,
-          assigned_at,
-          case_status,
-          workflow_stage,
-          referral_data,
-          created_at,
-          updated_at
+          "casePin",
+          "lawyerPin",
+          "lawyerName",
+          "clientName",
+          "caseType",
+          "assignedCmPin",
+          "assignedCmName",
+          "assignedAt",
+          "caseStatus",
+          "workflowStage",
+          "referralData",
+          "createdAt",
+          "updatedAt"
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, $8, $9, $10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-        RETURNING id, case_pin, assigned_cm_name`,
+        RETURNING id, "casePin", "assignedCmName"`,
         [
           casePin,
           lawyerPin,
@@ -548,31 +548,31 @@ export default {
           clientName,
           caseType,
           assignedCM.pin,
-          assignedCM.cm_name,
-          'pending_contact', // Initial status
+          assignedCM.cmName,
+          'pendingContact', // Initial status
           1, // Stage 1: Case Opened
           JSON.stringify(referralData || {})
         ]
       );
 
-      console.log(`✅ Case ${casePin} successfully assigned to ${assignedCM.cm_name}`);
+      console.log(`✅ Case ${casePin} successfully assigned to ${assignedCM.cmName}`);
       console.log(`   Case ID: ${caseResult.rows[0].id}`);
-      console.log(`   Status: pending_contact`);
+      console.log(`   Status: pendingContact`);
       console.log(`   Stage: 1 (Case Opened - 7%)`);
 
       // Step 4: Log activity (GDPR audit trail)
       await caseManagersDb.query(
-        `INSERT INTO case_activity_log (
-          case_pin,
-          activity_type,
-          activity_description,
-          performed_by,
-          performed_at
+        `INSERT INTO "caseActivityLog" (
+          "casePin",
+          "activityType",
+          "activityDescription",
+          "performedBy",
+          "performedAt"
         ) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
         [
           casePin,
-          'case_assigned',
-          `Case automatically assigned to ${assignedCM.cm_name} (lowest workload: ${assignedCM.activeCount} cases)`,
+          'caseAssigned',
+          `Case automatically assigned to ${assignedCM.cmName} (lowest workload: ${assignedCM.activeCount} cases)`,
           'system'
         ]
       );
@@ -580,17 +580,17 @@ export default {
       // Step 5: Return assigned CM details to Lawyers Dashboard
       return reply.send({
         success: true,
-        message: `Case successfully assigned to ${assignedCM.cm_name}`,
+        message: `Case successfully assigned to ${assignedCM.cmName}`,
         assignedCM: {
-          cmId: assignedCM.cm_id,
-          cmName: assignedCM.cm_name,
+          cmId: assignedCM.cmId,
+          cmName: assignedCM.cmName,
           cmPin: assignedCM.pin,
           currentWorkload: assignedCM.activeCount
         },
         caseDetails: {
           caseId: caseResult.rows[0].id,
           casePin: casePin,
-          status: 'pending_contact',
+          status: 'pendingContact',
           stage: 1,
           stageLabel: 'Case Opened (7%)'
         }
@@ -600,7 +600,7 @@ export default {
       console.error('❌ Auto-assignment error:', error);
 
       // Check for duplicate case PIN
-      if (error.code === '23505' && error.constraint === 'cases_case_pin_key') {
+      if (error.code === '23505' && error.constraint === 'casesCasePinKey') {
         return reply.status(400).send({
           success: false,
           error: 'This case PIN already exists in the system'
@@ -630,18 +630,18 @@ export default {
       // Base query to get all cases
       let query = `
         SELECT
-          case_pin,
-          client_name,
-          assigned_cm_name,
-          case_status,
-          workflow_stage,
-          stage_updated_at,
-          created_at,
-          consent_received_at,
-          ina_visit_date,
-          EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - stage_updated_at)) / 86400 as days_in_stage
+          "casePin",
+          "clientName",
+          "assignedCmName",
+          "caseStatus",
+          "workflowStage",
+          "stageUpdatedAt",
+          "createdAt",
+          "consentReceivedAt",
+          "inaVisitDate",
+          EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - "stageUpdatedAt")) / 86400 as "daysInStage"
         FROM cases
-        WHERE case_status NOT IN ('closed', 'cancelled')
+        WHERE "caseStatus" NOT IN ('closed', 'cancelled')
       `;
 
       const params = [];
@@ -649,34 +649,34 @@ export default {
       // Filter by CM if provided
       if (cmPin) {
         params.push(cmPin);
-        query += ` AND assigned_cm_pin = $${params.length}`;
+        query += ` AND "assignedCmPin" = $${params.length}`;
       }
 
       // Apply Action Center filter
       if (filter) {
         switch (filter) {
           case 'urgent':
-            query += ` AND (CURRENT_TIMESTAMP - stage_updated_at) > INTERVAL '5 days'`;
+            query += ` AND (CURRENT_TIMESTAMP - "stageUpdatedAt") > INTERVAL '5 days'`;
             break;
           case 'today':
-            query += ` AND ina_visit_date::date = CURRENT_DATE`;
+            query += ` AND "inaVisitDate"::date = CURRENT_DATE`;
             break;
           case 'ready':
-            query += ` AND case_status = 'consent_received' AND workflow_stage = 4`;
+            query += ` AND "caseStatus" = 'consentReceived' AND "workflowStage" = 4`;
             break;
           case 'pending':
-            query += ` AND workflow_stage = 9 AND case_status = 'internal_review_complete'`;
+            query += ` AND "workflowStage" = 9 AND "caseStatus" = 'internalReviewComplete'`;
             break;
         }
       }
 
-      query += ` ORDER BY stage_updated_at ASC`;
+      query += ` ORDER BY "stageUpdatedAt" ASC`;
 
       const result = await caseManagersDb.query(query, params);
 
       // Calculate priority for each case
       const casesWithPriority = result.rows.map(caseData => {
-        const daysInStage = Math.floor(caseData.days_in_stage);
+        const daysInStage = Math.floor(caseData.daysInStage);
 
         let priority;
         if (daysInStage > 5) {
@@ -706,22 +706,22 @@ export default {
         }
 
         // Map workflow stage to percentage and label
-        const stageInfo = getStageInfo(caseData.workflow_stage);
+        const stageInfo = getStageInfo(caseData.workflowStage);
 
         return {
-          casePin: caseData.case_pin,
-          clientName: caseData.client_name,
-          assignedCM: caseData.assigned_cm_name,
-          status: caseData.case_status,
-          workflowStage: caseData.workflow_stage,
+          casePin: caseData.casePin,
+          clientName: caseData.clientName,
+          assignedCM: caseData.assignedCmName,
+          status: caseData.caseStatus,
+          workflowStage: caseData.workflowStage,
           stageLabel: stageInfo.label,
           progressPercent: stageInfo.percent,
           priority: priority,
           daysInStage: daysInStage,
-          stageUpdatedAt: caseData.stage_updated_at,
-          createdAt: caseData.created_at,
-          consentReceivedAt: caseData.consent_received_at,
-          inaVisitDate: caseData.ina_visit_date
+          stageUpdatedAt: caseData.stageUpdatedAt,
+          createdAt: caseData.createdAt,
+          consentReceivedAt: caseData.consentReceivedAt,
+          inaVisitDate: caseData.inaVisitDate
         };
       });
 
@@ -760,42 +760,42 @@ export default {
       const urgentResult = await caseManagersDb.query(
         `SELECT COUNT(*) as count
          FROM cases
-         WHERE case_status NOT IN ('closed', 'cancelled')
-         AND (CURRENT_TIMESTAMP - stage_updated_at) > INTERVAL '5 days'`
+         WHERE "caseStatus" NOT IN ('closed', 'cancelled')
+         AND (CURRENT_TIMESTAMP - "stageUpdatedAt") > INTERVAL '5 days'`
       );
 
       // TODAY: INA visits scheduled for today
       const todayResult = await caseManagersDb.query(
         `SELECT COUNT(*) as count
-         FROM ina_visits
-         WHERE visit_date::date = CURRENT_DATE
-         AND visit_status = 'scheduled'`
+         FROM "inaVisits"
+         WHERE "visitDate"::date = CURRENT_DATE
+         AND "visitStatus" = 'scheduled'`
       );
 
       // READY: Consents received, ready to contact
       const readyResult = await caseManagersDb.query(
         `SELECT COUNT(*) as count
          FROM cases
-         WHERE case_status = 'consent_received'
-         AND workflow_stage = 4`
+         WHERE "caseStatus" = 'consentReceived'
+         AND "workflowStage" = 4`
       );
 
       // PENDING: Cases awaiting reader assignment (stage 9 complete, no reader)
       const pendingResult = await caseManagersDb.query(
         `SELECT COUNT(*) as count
          FROM cases
-         WHERE workflow_stage = 9
-         AND case_status = 'internal_review_complete'
+         WHERE "workflowStage" = 9
+         AND "caseStatus" = 'internalReviewComplete'
          AND (
-           (SELECT COUNT(*) FROM ina_reports WHERE ina_reports.case_pin = cases.case_pin AND first_reader_pin IS NULL) > 0
+           (SELECT COUNT(*) FROM "inaReports" WHERE "inaReports"."casePin" = cases."casePin" AND "firstReaderPin" IS NULL) > 0
          )`
       );
 
       // APPROVAL QUEUE: Payment requests + case closures pending approval
       const approvalResult = await caseManagersDb.query(
         `SELECT
-           (SELECT COUNT(*) FROM ina_reports WHERE payment_status = 'pending_approval') +
-           (SELECT COUNT(*) FROM cases WHERE case_status = 'awaiting_closure_approval') as count`
+           (SELECT COUNT(*) FROM "inaReports" WHERE "paymentStatus" = 'pendingApproval') +
+           (SELECT COUNT(*) FROM cases WHERE "caseStatus" = 'awaitingClosureApproval') as count`
       );
 
       const counts = {
@@ -854,9 +854,9 @@ export default {
 
       console.log(`🔍 Getting workspace features for PIN: ${pin}`);
 
-      // Query case_managers table for compliance status
+      // Query caseManagers table for compliance status
       const caseManagerResult = await caseManagersDb.query(
-        'SELECT compliance_approved, status FROM case_managers WHERE pin = $1',
+        'SELECT "complianceApproved", status FROM "caseManagers" WHERE pin = $1',
         [pin]
       );
 
@@ -870,7 +870,7 @@ export default {
       }
 
       const caseManager = caseManagerResult.rows[0];
-      const isApproved = caseManager.compliance_approved === true;
+      const isApproved = caseManager.complianceApproved === true;
 
       // Define features based on access level
       const features = {

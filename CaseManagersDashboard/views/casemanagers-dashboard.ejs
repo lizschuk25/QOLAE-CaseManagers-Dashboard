@@ -585,7 +585,7 @@
                     console.log('[WebSocket] ✅ Connected to Case Managers WS (ID:', socket.id + ')');
 
                     // Authenticate with JWT token (from cookie)
-                    const token = getCookie('qolae_cm_token');
+                    const token = getCookie('qolaeCmToken');
                     if (token) {
                         socket.emit('authenticate', { token: token });
                     }
@@ -684,7 +684,7 @@
                 });
 
                 // Compliance approved event - New starter gets full access
-                socket.on('compliance_approved', (data) => {
+                socket.on('complianceApproved', (data) => {
                     // Check if this notification is for the current user
                     const userPin = getCurrentUserPin();
 
@@ -794,7 +794,7 @@
          */
         function getCurrentUserPin() {
             // Try to get PIN from cookie first
-            const pin = getCookie('qolae_cm_pin');
+            const pin = getCookie('qolaeCmPin');
             if (pin) return pin;
 
             // Fallback: Try from EJS variable if available

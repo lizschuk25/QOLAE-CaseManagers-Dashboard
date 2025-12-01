@@ -26,9 +26,9 @@ export async function getWorkspaceFeatures(request, reply) {
 
     console.log(`🔍 Getting workspace features for PIN: ${pin}`);
 
-    // Query case_managers table for compliance status
+    // Query caseManagers table for compliance status
     const caseManagerResult = await caseManagersDb.query(
-      'SELECT compliance_approved, status FROM case_managers WHERE pin = $1',
+      'SELECT "complianceApproved", status FROM "caseManagers" WHERE pin = $1',
       [pin]
     );
 
@@ -42,7 +42,7 @@ export async function getWorkspaceFeatures(request, reply) {
     }
 
     const caseManager = caseManagerResult.rows[0];
-    const isApproved = caseManager.compliance_approved === true;
+    const isApproved = caseManager.complianceApproved === true;
 
     // Define features based on access level
     const features = {

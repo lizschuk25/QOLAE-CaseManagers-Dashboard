@@ -94,7 +94,7 @@ export default async function (fastify, opts) {
    *   readerName: string,
    *   email: string,
    *   phone?: string,
-   *   readerType: 'first_reader' | 'second_reader',
+   *   readerType: 'firstReader' | 'secondReader',
    *   specialization?: string,
    *   registrationBody?: 'NMC' | 'GMC' | 'Other',
    *   registrationNumber?: string,
