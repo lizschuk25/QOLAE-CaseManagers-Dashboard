@@ -595,7 +595,7 @@ WEBSOCKET NOTIFICATIONS:
         try {
             // TODO: Replace with actual API call
             // API endpoint queries consentForms table (6 POA columns added)
-            // const response = await fetch('/api/casemanagers/consent-forms/poa-pending');
+            // const response = await fetch('/api/casemanagers/consentForms/poa-pending');
             // const data = await response.json();
             
             console.log('📄 Loading pending POA verifications...');
@@ -634,8 +634,8 @@ WEBSOCKET NOTIFICATIONS:
         try {
             // TODO: Call SSOT API to update poaVerificationStatus on consentForms
             // Updates: poaVerificationStatus = 'verified', poaVerifiedBy, poaVerifiedAt
-            // Also moves document: tempPOADocs → poa-documents/[clientPin].pdf
-            // const response = await fetch(`/api/casemanagers/consent-forms/${clientPin}/verify-poa`, {
+            // Also moves document: tempPOADocs → poaDocuments/[clientPin].pdf
+            // const response = await fetch(`/api/casemanagers/consentForms/${clientPin}/verify-poa`, {
             //     method: 'POST',
             //     headers: { 'Content-Type': 'application/json' },
             //     body: JSON.stringify({ status: 'verified', verifiedBy: 'Liz' })
@@ -681,7 +681,7 @@ WEBSOCKET NOTIFICATIONS:
         try {
             // TODO: Call SSOT API to update poaVerificationStatus on consentForms
             // Updates: poaVerificationStatus = 'rejected', poaRejectionReason
-            // const response = await fetch(`/api/casemanagers/consent-forms/${clientPin}/reject-poa`, {
+            // const response = await fetch(`/api/casemanagers/consentForms/${clientPin}/reject-poa`, {
             //     method: 'POST',
             //     headers: { 'Content-Type': 'application/json' },
             //     body: JSON.stringify({ status: 'rejected', reason: notes })
