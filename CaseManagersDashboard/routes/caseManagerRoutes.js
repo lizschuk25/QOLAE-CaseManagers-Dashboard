@@ -19,7 +19,7 @@ export default async function (fastify, opts) {
    * GET /readers-registration-card
    * Display the Readers Registration Card form
    */
-  fastify.get('/readers-registration-card', async (req, reply) => {
+  fastify.get('/readersRegistrationCard', async (req, reply) => {
     return reply.view('readers-registration-card');
   });
 
@@ -31,7 +31,7 @@ export default async function (fastify, opts) {
    * - 'management' (Liz): All 4 tabs (My Cases, Reader Mgmt, Approval Queue, CM Mgmt)
    * - 'operational' (Contractor CMs): My Cases tab only
    */
-  fastify.get('/case-managers-dashboard', async (req, reply) => {
+  fastify.get('/caseManagersDashboard', async (req, reply) => {
     // TODO: Implement authentication to get actual user data
     // For now, default to management role (Liz)
     const userData = {
@@ -54,7 +54,7 @@ export default async function (fastify, opts) {
    * Body: { readerName: string }
    * Returns: { success: boolean, pin: string }
    */
-  fastify.post('/api/case-managers/generate-reader-pin', async (req, reply) => {
+  fastify.post('/api/caseManagers/generateReaderPin', async (req, reply) => {
     return await CaseManagersController.generateReaderPIN(req, reply);
   });
 
@@ -77,12 +77,12 @@ export default async function (fastify, opts) {
    *   status?: string
    * }
    */
-  fastify.post('/api/case-managers/verify-medical-registration', async (req, reply) => {
+  fastify.post('/api/caseManagers/verifyMedicalRegistration', async (req, reply) => {
     return await CaseManagersController.verifyMedicalRegistration(req, reply);
   });
 
   // ==============================================
-  // LOCATION BLOCK 4: READER REGISTRATION
+  // LOCATION BLOCK 4: READER REGISTRATION(HRCompliance Dashboard responsibility)
   // ==============================================
 
   /**
@@ -108,7 +108,7 @@ export default async function (fastify, opts) {
    *   emailSent: boolean
    * }
    */
-  fastify.post('/api/case-managers/register-reader', async (req, reply) => {
+  fastify.post('/api/caseManagers/registerReader', async (req, reply) => {
     return await CaseManagersController.registerReader(req, reply);
   });
 
@@ -136,7 +136,7 @@ export default async function (fastify, opts) {
    *   caseDetails: { caseId, casePin, status, stage, stageLabel }
    * }
    */
-  fastify.post('/api/case-managers/assign-case-auto', async (req, reply) => {
+  fastify.post('/api/caseManagers/assignCaseAuto', async (req, reply) => {
     return await CaseManagersController.autoAssignCase(req, reply);
   });
 
@@ -163,7 +163,7 @@ export default async function (fastify, opts) {
    *   count: number
    * }
    */
-  fastify.get('/api/case-managers/cases-with-priority', async (req, reply) => {
+  fastify.get('/api/caseManagers/casesWithPriority', async (req, reply) => {
     return await CaseManagersController.getCasesWithPriority(req, reply);
   });
 
@@ -187,7 +187,7 @@ export default async function (fastify, opts) {
    *   }
    * }
    */
-  fastify.get('/api/case-managers/badge-counts', async (req, reply) => {
+  fastify.get('/api/caseManagers/badgeCounts', async (req, reply) => {
     return await CaseManagersController.getBadgeCounts(req, reply);
   });
 
@@ -199,7 +199,7 @@ export default async function (fastify, opts) {
    * GET /api/case-managers/health
    * Health check for Case Managers API
    */
-  fastify.get('/api/case-managers/health', async (req, reply) => {
+  fastify.get('/api/caseManagers/health', async (req, reply) => {
     return {
       service: 'case-managers',
       status: 'healthy',
@@ -207,5 +207,35 @@ export default async function (fastify, opts) {
       database: 'qolae_readers'
     };
   });
+
+  // ==============================================
+  // LOCATION BLOCK 8: INVOICE EMAIL AFTER INA REPORT (TODO)
+  // ==============================================
+  //
+  // Purpose: Send updated invoice to Lawyer after INA report is completed
+  // Trigger: When Case Manager marks INA report as complete
+  //
+  // Flow:
+  // 1. INA report completed by Reader(s)
+  // 2. Case Manager reviews and approves INA report
+  // 3. System generates updated Invoice with final costs
+  // 4. Invoice emailed to Lawyer with INA report summary
+  //
+  // Implementation Notes:
+  // - Invoice PDF stored in: /centralRepository/paymentInvoices/Invoice_{clientPin}.pdf
+  // - Use sendPaymentInvoiceEmail() from emailController.js
+  // - Include: clientPin, lawyerPin, transactionId, serviceType, finalAmount
+  //
+  // TODO: Implement when INA workflow is complete
+  // fastify.post('/api/caseManagers/sendInvoiceAfterIna', async (req, reply) => {
+  //   const { clientPin, lawyerPin } = req.body;
+  //
+  //   // 1. Verify INA report is complete
+  //   // 2. Generate updated invoice PDF
+  //   // 3. Send invoice email to lawyer
+  //   // 4. Log GDPR audit entry
+  //
+  //   return { success: true, message: 'Invoice sent to lawyer' };
+  // });
 
 }

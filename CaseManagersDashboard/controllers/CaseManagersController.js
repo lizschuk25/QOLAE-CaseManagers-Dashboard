@@ -1,42 +1,35 @@
 // ┌────────────────────────────────────────────┐
 // │ QOLAE CaseManagersController.js            │
 // │ Author: Liz 👑                             │
-// │ Description: Handles Readers Registration  │
+// │ Description: Handles Case Managers Dashboard  │
 // │ Steps:                                     │
-// │ 1️⃣ Generate Reader PIN (RDR-prefix)        │
-// │ 2️⃣ Verify NMC/GMC Registration             │
-// │ 3️⃣ Register Reader                          │
-// │ 4️⃣ Send Email Invitation                   │
+// │ 1️⃣ Generates Case Manager PIN  │
+// │ 2️⃣ Verifies Case Manager Registration             │
+// │ 3️⃣ Registers Case Manager                          │
+// │ 4️⃣ Sends Email Invitation                   │
 // └────────────────────────────────────────────┘
-
-import { Pool } from 'pg';
-import { generateCustomizedNDA } from '../utils/generateCustomizedReadersNDA.js';
-import { sendReaderInvitationEmail } from '../utils/sendReaderInvitation.js';
 
 // ==============================================
 // DATABASE CONNECTIONS
 // ==============================================
-const readersDb = new Pool({
-  connectionString: process.env.READERS_DATABASE_URL
-});
 
 const caseManagersDb = new Pool({
   connectionString: process.env.CASEMANAGERS_DATABASE_URL
 });
 
 // ==============================================
-// LOCATION BLOCK A: READER PIN GENERATOR
+// LOCATION BLOCK A: CASE MANAGER PIN GENERATOR
 // ==============================================
-// Generates unique PIN with RDR prefix
-// Pattern: RDR-{INITIALS}{6-DIGIT-HASH}
-// Example: "John Smith" → "RDR-JS123456"
+// Generates unique PIN with CM prefix
+// Pattern: CM-{INITIALS}{6-DIGIT-HASH}
+// Example: "John Smith" → "CM-JS123456"
 // ==============================================
 
-function generateReaderPin(readerName) {
+function generateCaseManagerPin(caseManagerName) {
   // Extract initials from Reader name
   let initials = '';
-  if (readerName && readerName.trim()) {
-    initials = readerName
+  if (caseManagerName && caseManagerName.trim()) {
+    initials = caseManagerName
       .trim()
       .split(' ')
       .filter(word => word.match(/[a-zA-Z]/))
@@ -57,10 +50,10 @@ function generateReaderPin(readerName) {
   }
 
   // Create 6-digit numeric hash from full name
-  const hash = (readerName || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = (caseManagerName || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const numericPin = Math.abs(hash % 1000000).toString().padStart(6, '0');
 
-  return `RDR-${initials}${numericPin}`;
+  return `CM-${initials}${numericPin}`;
 }
 
 // ==============================================

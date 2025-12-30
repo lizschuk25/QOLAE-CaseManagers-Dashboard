@@ -446,23 +446,23 @@ CaseManagers server.js, not frontend logic.
         <main class="tab-content-container">
             <!-- My Cases Tab (All users) -->
             <div id="my-cases" class="tab-content active">
-                <%- include('tabs/my-cases-tab.ejs') %>
+                <%- include('tabs/myCasesTab.ejs') %>
             </div>
 
             <% if (userRole === 'management') { %>
                 <!-- Reader Management Tab (Management only) -->
                 <div id="reader-management" class="tab-content">
-                    <%- include('tabs/reader-management-tab.ejs') %>
+                    <%- include('tabs/readerManagementTab.ejs') %>
                 </div>
 
                 <!-- Approval & Verification Tab (Management only) -->
                 <div id="approval-queue" class="tab-content">
-                    <%- include('tabs/approvalVerification-tab.ejs') %>
+                    <%- include('tabs/approvalVerificationTab.ejs') %>
                 </div>
 
                 <!-- CM Management Tab (Management only) -->
                 <div id="cm-management" class="tab-content">
-                    <%- include('tabs/cm-management-tab.ejs') %>
+                    <%- include('tabs/cmManagementTab.ejs') %>
                 </div>
             <% } %>
         </main>
@@ -589,7 +589,7 @@ CaseManagers server.js, not frontend logic.
         // ===== WEBSOCKET INTEGRATION =====
         // Real-time updates via Socket.IO
         // Server: api.qolae.com:3007
-        // Path: /ws-case-managers/socket.io/
+        // Path: /wsCaseManagers/socket.io/
 
         // ===== WEBSOCKET CONNECTION =====
         let socket = null;
@@ -601,7 +601,7 @@ CaseManagers server.js, not frontend logic.
 
                 // Connect to WebSocket server
                 socket = io('https://api.qolae.com', {
-                    path: '/ws-case-managers/socket.io/',
+                    path: '/wsCaseManagers/socket.io/',
                     transports: ['websocket', 'polling'],
                     reconnection: true,
                     reconnectionDelay: 1000,
