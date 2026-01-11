@@ -344,7 +344,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
         // ===============================================================
         if (!caseManagerData.complianceSubmitted) {
           console.log(`[2FA] Case Manager ${pin} needs compliance - redirecting to HRCompliance`);
-          return reply.code(302).redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/newStarterCompliance?pin=${pin}&verified=true`);
+          return reply.code(302).redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/caseManagersCompliance?pin=${pin}&verified=true`);
         }
 
         // Redirect based on password setup status
