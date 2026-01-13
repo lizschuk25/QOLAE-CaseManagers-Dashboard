@@ -4,280 +4,358 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QOLAE Case Managers - Email Verification</title>
-    <!-- ========================================== -->
-    <!-- LOCATION BLOCK 0: ALL CSS STYLES -->
-    <!-- ========================================== -->
     <style>
-        /* ===== RESET & BASE STYLES ===== */
+        /* ============================================== */
+        /* RESET & BASE STYLES */
+        /* ============================================== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4a90e2 0%, #7cb3f5 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
         }
-
-        /* ===== CONTAINER ===== */
+        
+        /* ============================================== */
+        /* LOGO & BRANDING (OUTSIDE CONTAINER) */
+        /* ============================================== */
+        .qolaeLogo {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+        
+        .qolaeLogo img {
+            max-width: 800px;
+            width: 90%;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+        
+        .qolaeLogo p {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* ============================================== */
+        /* VERIFICATION CONTAINER */
+        /* ============================================== */
         .verificationContainer {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 450px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 500px;
             width: 100%;
-            padding: 40px;
+            padding: 50px 40px;
         }
-
-        /* ===== LOGO & BRANDING ===== */
-        .logoSection {
+        
+        /* ============================================== */
+        /* HEADER SECTION */
+        /* ============================================== */
+        .headerSection {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-
-        .logoImage {
-            max-width: 180px;
-            height: auto;
-            margin-bottom: 15px;
-        }
-
-        .logoSection h1 {
+        
+        .headerSection h1 {
             color: #0d9488;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
-
-        .logoSection p {
+        
+        .headerSection p {
             color: #6b7280;
-            font-size: 14px;
+            font-size: 15px;
+            line-height: 1.6;
         }
-
+        
         .stepIndicator {
             display: inline-block;
             background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
             color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 13px;
             font-weight: 600;
-            margin-top: 10px;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
-
-        /* ===== PROGRESS STEPS ===== */
+        
+        /* ============================================== */
+        /* PROGRESS STEPS */
+        /* ============================================== */
         .progressSteps {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 30px;
+            gap: 10px;
+            margin-bottom: 35px;
         }
-
+        
         .progressStep {
-            width: 40px;
-            height: 4px;
-            border-radius: 2px;
+            width: 50px;
+            height: 5px;
+            border-radius: 3px;
             background: #e5e7eb;
         }
-
+        
         .progressStep.completed {
             background: #22c55e;
         }
-
+        
         .progressStep.active {
             background: #14b8a6;
         }
-
-        /* ===== FORM STYLES ===== */
+        
+        /* ============================================== */
+        /* FORM STYLES */
+        /* ============================================== */
         .formGroup {
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
-
+        
         .formLabel {
             display: block;
             color: #374151;
             font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 15px;
+            text-align: center;
         }
-
+        
         .formInput {
             width: 100%;
-            padding: 12px 16px;
+            padding: 18px;
             border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 18px;
+            border-radius: 12px;
+            font-size: 24px;
             text-align: center;
-            letter-spacing: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
+            letter-spacing: 12px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            background: #f9fafb;
         }
-
+        
         .formInput:focus {
             outline: none;
             border-color: #14b8a6;
-            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1);
         }
-
+        
         .formHint {
             color: #6b7280;
-            font-size: 12px;
-            margin-top: 6px;
+            font-size: 13px;
+            margin-top: 8px;
             text-align: center;
+            line-height: 1.5;
         }
-
-        /* ===== BUTTON STYLES ===== */
+        
+        /* ============================================== */
+        /* BUTTON STYLES */
+        /* ============================================== */
         .btnPrimary {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
-
+        
         .btnPrimary:hover {
             background: linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(20, 184, 166, 0.4);
         }
-
+        
         .btnPrimary:disabled {
             background: #9ca3af;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-
+        
         .btnSecondary {
             width: 100%;
-            padding: 12px;
-            background: transparent;
+            padding: 16px;
+            background: white;
             color: #0d9488;
-            border: 2px solid #0d9488;
-            border-radius: 8px;
-            font-size: 14px;
+            border: 2px solid #14b8a6;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
-
+        
         .btnSecondary:hover {
-            background: #f0fdfa;
+            background: #ecfdf5;
+            border-color: #0d9488;
         }
-
+        
         .btnSecondary:disabled {
-            opacity: 0.5;
+            background: #f3f4f6;
+            color: #9ca3af;
+            border-color: #e5e7eb;
             cursor: not-allowed;
         }
-
-        /* ===== MESSAGE STYLES ===== */
+        
+        /* ============================================== */
+        /* MESSAGE STYLES */
+        /* ============================================== */
         .messageBox {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 24px;
             font-size: 14px;
+            text-align: center;
+            line-height: 1.6;
         }
-
+        
         .messageSuccess {
             background: #d1fae5;
             color: #065f46;
             border: 1px solid #6ee7b7;
         }
-
+        
         .messageError {
             background: #fee2e2;
             color: #991b1b;
             border: 1px solid #fca5a5;
         }
-
+        
         .messageInfo {
-            background: #ccfbf1;
-            color: #115e59;
-            border: 1px solid #5eead4;
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
         }
-
-        /* ===== EMAIL DISPLAY ===== */
-        .emailDisplay {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 8px;
+        
+        /* ============================================== */
+        /* EMAIL INFO BOX */
+        /* ============================================== */
+        .emailInfo {
+            background: #ecfdf5;
+            padding: 16px;
+            border-radius: 10px;
             text-align: center;
-            margin-bottom: 20px;
-            color: #374151;
+            margin-bottom: 24px;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .emailInfo p {
+            color: #065f46;
             font-size: 14px;
+            margin: 0;
+            line-height: 1.6;
         }
-
-        .emailDisplay strong {
+        
+        .emailInfo strong {
             color: #0d9488;
+            font-weight: 700;
         }
-
-        /* ===== TIMER ===== */
-        .timerDisplay {
+        
+        /* ============================================== */
+        /* RESEND INFO */
+        /* ============================================== */
+        .resendInfo {
             text-align: center;
+            margin-top: 20px;
             color: #6b7280;
             font-size: 13px;
-            margin-top: 16px;
         }
-
-        .timerDisplay.expiring {
-            color: #dc2626;
+        
+        .resendTimer {
+            color: #0d9488;
+            font-weight: 600;
         }
-
-        /* ===== SECURITY BADGE ===== */
-        .securityBadge {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 8px;
-            color: #64748b;
-            font-size: 12px;
+        
+        /* ============================================== */
+        /* SECURITY NOTICE */
+        /* ============================================== */
+        .securityNotice {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 28px;
+            text-align: center;
         }
-
-        .securityBadge svg {
-            width: 16px;
-            height: 16px;
-            fill: #22c55e;
+        
+        .securityNotice p {
+            color: #065f46;
+            font-size: 13px;
+            margin: 0;
+            line-height: 1.5;
         }
-
-        /* ===== FOOTER ===== */
+        
+        /* ============================================== */
+        /* FOOTER */
+        /* ============================================== */
         .footerText {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 24px;
             color: #9ca3af;
             font-size: 12px;
+        }
+        
+        /* ============================================== */
+        /* RESPONSIVE */
+        /* ============================================== */
+        @media (max-width: 640px) {
+            .qolaeLogo img {
+                max-width: 300px;
+            }
+            
+            .verificationContainer {
+                padding: 40px 30px;
+            }
+            
+            .headerSection h1 {
+                font-size: 24px;
+            }
+            
+            .formInput {
+                font-size: 20px;
+                letter-spacing: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- ========================================== -->
-    <!-- LOCATION BLOCK 1: LOGO & HEADER -->
-    <!-- ========================================== -->
+    <!-- Logo Section (Outside Container) -->
+    <div class="qolaeLogo">
+        <img src="https://api.qolae.com/centralRepository/public/images/qolaeNewLogo.png" alt="QOLAE Logo">
+        <p>Case Managers Professional Portal</p>
+    </div>
+
+    <!-- Verification Container -->
     <div class="verificationContainer">
-        <div class="logoSection">
-            <img src="/public/images/qolaeNewLogo.png" alt="QOLAE Logo" class="logoImage" onerror="this.style.display='none'">
+        <!-- Header -->
+        <div class="headerSection">
             <h1>Email Verification</h1>
             <p>Enter the 6-digit code sent to your email</p>
             <span class="stepIndicator">Step 2 of 5</span>
         </div>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 2: PROGRESS INDICATOR -->
-        <!-- ========================================== -->
+        
+        <!-- Progress Steps -->
         <div class="progressSteps">
             <div class="progressStep completed"></div>
             <div class="progressStep active"></div>
@@ -285,130 +363,121 @@
             <div class="progressStep"></div>
             <div class="progressStep"></div>
         </div>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 3: MESSAGE DISPLAY -->
-        <!-- ========================================== -->
+        
+        <!-- Messages -->
         <% if (typeof error !== 'undefined' && error) { %>
             <div class="messageBox messageError"><%= error %></div>
         <% } %>
-
-        <% if (typeof query !== 'undefined' && query.codeSent) { %>
+        
+        <% if (typeof codeSent !== 'undefined' && codeSent) { %>
             <div class="messageBox messageSuccess">
-                Verification code sent! Check your email inbox.
+                ✅ Verification code sent! Check your email.
             </div>
         <% } %>
-
+        
+        <!-- Email Info -->
         <% if (typeof email !== 'undefined' && email) { %>
-            <div class="emailDisplay">
-                Code sent to: <strong><%= email %></strong>
+            <div class="emailInfo">
+                <p>📧 Code sent to: <strong><%= email %></strong></p>
             </div>
         <% } %>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 4: VERIFICATION FORM -->
-        <!-- ========================================== -->
-        <form action="/caseManagersAuth/verify2fa" method="POST" id="verifyForm">
+        
+        <!-- Verification Form -->
+        <form action="/caseManagersAuth/verify2fa" method="POST" id="verificationForm">
             <div class="formGroup">
-                <label class="formLabel" for="verificationCode">Verification Code</label>
-                <input
-                    type="text"
-                    id="verificationCode"
-                    name="verificationCode"
-                    class="formInput"
+                <label class="formLabel" for="verificationCode">
+                    🔐 6-Digit Verification Code
+                </label>
+                <input 
+                    type="text" 
+                    id="verificationCode" 
+                    name="verificationCode" 
+                    class="formInput" 
                     placeholder="000000"
                     maxlength="6"
                     pattern="[0-9]{6}"
-                    inputmode="numeric"
-                    autocomplete="one-time-code"
                     required
                     autofocus
+                    autocomplete="one-time-code"
+                    inputmode="numeric"
                 >
-                <p class="formHint">Enter the 6-digit code from your email</p>
+                <p class="formHint">
+                    Check your inbox and spam folder
+                </p>
             </div>
-
+            
             <button type="submit" class="btnPrimary" id="verifyBtn">
-                Verify Code
+                ✅ Verify & Continue
             </button>
         </form>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 5: RESEND CODE -->
-        <!-- ========================================== -->
+        
+        <!-- Request New Code Form -->
         <form action="/caseManagersAuth/requestEmailCode" method="POST" id="resendForm">
             <button type="submit" class="btnSecondary" id="resendBtn">
-                Resend Code
+                📧 Resend Verification Code
             </button>
         </form>
-
-        <div class="timerDisplay" id="timerDisplay">
-            Code expires in <span id="countdown">10:00</span>
+        
+        <!-- Resend Timer -->
+        <div class="resendInfo">
+            <p id="resendTimer"></p>
         </div>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 6: SECURITY BADGE -->
-        <!-- ========================================== -->
-        <div class="securityBadge">
-            <svg viewBox="0 0 24 24">
-                <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
-            </svg>
-            <span>2-Factor Authentication Active</span>
+        
+        <!-- Security Notice -->
+        <div class="securityNotice">
+            <p>🛡️ Code expires in 10 minutes. Never share your verification code.</p>
         </div>
-
-        <p class="footerText">2025 QOLAE. All rights reserved.</p>
+        
+        <p class="footerText">© 2025 QOLAE. All rights reserved.</p>
     </div>
-
-    <!-- ========================================== -->
-    <!-- LOCATION BLOCK 7: JAVASCRIPT -->
-    <!-- ========================================== -->
+    
     <script>
-        // Auto-format code input (numbers only)
-        document.getElementById('verificationCode').addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 6);
-
+        // Auto-format verification code
+        const codeInput = document.getElementById('verificationCode');
+        codeInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
             // Auto-submit when 6 digits entered
             if (this.value.length === 6) {
-                document.getElementById('verifyBtn').focus();
+                document.getElementById('verificationForm').submit();
             }
         });
-
-        // Form submission handling
-        document.getElementById('verifyForm').addEventListener('submit', function(e) {
-            const btn = document.getElementById('verifyBtn');
-            btn.disabled = true;
-            btn.textContent = 'Verifying...';
+        
+        // Form submission handler
+        document.getElementById('verificationForm').addEventListener('submit', function(e) {
+            const verifyBtn = document.getElementById('verifyBtn');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = '⏳ Verifying...';
         });
-
+        
+        // Resend form handler
         document.getElementById('resendForm').addEventListener('submit', function(e) {
-            const btn = document.getElementById('resendBtn');
-            btn.disabled = true;
-            btn.textContent = 'Sending...';
+            const resendBtn = document.getElementById('resendBtn');
+            resendBtn.disabled = true;
+            resendBtn.textContent = '📧 Sending...';
         });
-
-        // Countdown timer (10 minutes)
-        let timeLeft = 600;
-        const countdownEl = document.getElementById('countdown');
-        const timerEl = document.getElementById('timerDisplay');
-
-        const timer = setInterval(function() {
-            timeLeft--;
-
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-
-            countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-            if (timeLeft <= 60) {
-                timerEl.classList.add('expiring');
+        
+        // Resend timer (60 seconds cooldown)
+        let resendCooldown = 60;
+        const resendBtn = document.getElementById('resendBtn');
+        const resendTimer = document.getElementById('resendTimer');
+        
+        function updateResendTimer() {
+            if (resendCooldown > 0) {
+                resendBtn.disabled = true;
+                resendTimer.innerHTML = `You can request a new code in <span class="resendTimer">${resendCooldown}s</span>`;
+                resendCooldown--;
+                setTimeout(updateResendTimer, 1000);
+            } else {
+                resendBtn.disabled = false;
+                resendTimer.textContent = 'Ready to resend';
             }
-
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                countdownEl.textContent = 'EXPIRED';
-                document.getElementById('verifyBtn').disabled = true;
-                document.getElementById('verifyBtn').textContent = 'Code Expired - Request New Code';
-            }
-        }, 1000);
+        }
+        
+        // Start timer if code was just sent
+        <% if (typeof codeSent !== 'undefined' && codeSent) { %>
+            updateResendTimer();
+        <% } %>
     </script>
 </body>
 </html>

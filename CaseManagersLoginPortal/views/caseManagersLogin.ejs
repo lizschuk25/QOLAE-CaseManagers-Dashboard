@@ -4,295 +4,339 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QOLAE Case Managers Login</title>
-    <!-- ========================================== -->
-    <!-- LOCATION BLOCK 0: ALL CSS STYLES -->
-    <!-- ========================================== -->
     <style>
-        /* ===== RESET & BASE STYLES ===== */
+        /* ============================================== */
+        /* RESET & BASE STYLES */
+        /* ============================================== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4a90e2 0%, #7cb3f5 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
         }
-
-        /* ===== LOGIN CONTAINER ===== */
+        
+        /* ============================================== */
+        /* LOGO & BRANDING (OUTSIDE CONTAINER) */
+        /* ============================================== */
+        .qolaeLogo {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+        
+        .qolaeLogo img {
+            max-width: 800px;
+            width: 90%;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+        
+        .qolaeLogo p {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* ============================================== */
+        /* LOGIN CONTAINER */
+        /* ============================================== */
         .loginContainer {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 450px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 500px;
             width: 100%;
-            padding: 40px;
+            padding: 50px 40px;
         }
-
-        /* ===== LOGO & BRANDING ===== */
-        .logoSection {
+        
+        /* ============================================== */
+        /* HEADER SECTION */
+        /* ============================================== */
+        .headerSection {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
-
-        .logoImage {
-            max-width: 180px;
-            height: auto;
-            margin-bottom: 15px;
-        }
-
-        .logoSection h1 {
+        
+        .headerSection h1 {
             color: #0d9488;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
-
-        .logoSection p {
+        
+        .headerSection p {
             color: #6b7280;
-            font-size: 14px;
+            font-size: 15px;
+            line-height: 1.6;
         }
-
+        
         .roleIndicator {
             display: inline-block;
             background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
             color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 13px;
             font-weight: 600;
-            margin-top: 10px;
+            margin-top: 15px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
-
-        /* ===== FORM STYLES ===== */
+        
+        /* ============================================== */
+        /* FORM STYLES */
+        /* ============================================== */
         .formGroup {
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
-
+        
         .formLabel {
             display: block;
             color: #374151;
             font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 15px;
         }
-
+        
         .formInput {
             width: 100%;
-            padding: 12px 16px;
+            padding: 16px 18px;
             border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f9fafb;
         }
-
+        
         .formInput:focus {
             outline: none;
             border-color: #14b8a6;
-            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1);
         }
-
+        
         .formInput[readonly] {
             background: #f3f4f6;
             color: #6b7280;
             cursor: not-allowed;
         }
-
+        
         .formHint {
             color: #6b7280;
-            font-size: 12px;
-            margin-top: 6px;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.5;
         }
-
-        /* ===== BUTTON STYLES ===== */
+        
+        /* ============================================== */
+        /* BUTTON STYLES */
+        /* ============================================== */
         .btnPrimary {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
-
+        
         .btnPrimary:hover {
             background: linear-gradient(135deg, #14b8a6 0%, #2dd4bf 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(20, 184, 166, 0.4);
         }
-
+        
         .btnPrimary:disabled {
             background: #9ca3af;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-
-        /* ===== MESSAGE STYLES ===== */
+        
+        /* ============================================== */
+        /* MESSAGE STYLES */
+        /* ============================================== */
         .messageBox {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 24px;
             font-size: 14px;
+            line-height: 1.6;
         }
-
+        
         .messageSuccess {
             background: #d1fae5;
             color: #065f46;
             border: 1px solid #6ee7b7;
         }
-
+        
         .messageError {
             background: #fee2e2;
             color: #991b1b;
             border: 1px solid #fca5a5;
         }
-
+        
         .messageInfo {
-            background: #ccfbf1;
-            color: #115e59;
-            border: 1px solid #5eead4;
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
         }
-
-        /* ===== SECURITY BADGE ===== */
-        .securityBadge {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 8px;
-            color: #64748b;
-            font-size: 12px;
+        
+        /* ============================================== */
+        /* SECURITY NOTICE */
+        /* ============================================== */
+        .securityNotice {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 28px;
+            text-align: center;
         }
-
-        .securityBadge svg {
-            width: 16px;
-            height: 16px;
-            fill: #22c55e;
+        
+        .securityNotice p {
+            color: #065f46;
+            font-size: 13px;
+            margin: 0;
+            line-height: 1.5;
         }
-
-        /* ===== FOOTER ===== */
+        
+        /* ============================================== */
+        /* FOOTER */
+        /* ============================================== */
         .footerText {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 24px;
             color: #9ca3af;
             font-size: 12px;
+        }
+        
+        /* ============================================== */
+        /* RESPONSIVE */
+        /* ============================================== */
+        @media (max-width: 640px) {
+            .qolaeLogo img {
+                max-width: 300px;
+            }
+            
+            .loginContainer {
+                padding: 40px 30px;
+            }
+            
+            .headerSection h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- ========================================== -->
-    <!-- LOCATION BLOCK 1: LOGO & BRANDING -->
-    <!-- ========================================== -->
+    <!-- Logo Section (Outside Container) -->
+    <div class="qolaeLogo">
+        <img src="https://api.qolae.com/centralRepository/public/images/qolaeNewLogo.png" alt="QOLAE Logo">
+        <p>Case Managers Professional Portal</p>
+    </div>
+
+    <!-- Login Container -->
     <div class="loginContainer">
-        <div class="logoSection">
-            <img src="/public/images/qolaeNewLogo.png" alt="QOLAE Logo" class="logoImage" onerror="this.style.display='none'">
-            <h1>Case Managers Portal</h1>
-            <p>Secure Access for Case Management</p>
+        <!-- Header -->
+        <div class="headerSection">
+            <h1>Welcome Back</h1>
+            <p>Sign in to access your professional workspace</p>
             <span class="roleIndicator">Case Manager Access</span>
         </div>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 2: MESSAGE DISPLAY -->
-        <!-- ========================================== -->
+        
+        <!-- Messages -->
         <% if (typeof error !== 'undefined' && error) { %>
             <div class="messageBox messageError"><%= error %></div>
         <% } %>
-
+        
         <% if (typeof success !== 'undefined' && success) { %>
             <div class="messageBox messageSuccess"><%= success %></div>
         <% } %>
-
-        <% if (typeof pin !== 'undefined' && pin) { %>
-            <div class="messageBox messageInfo">
-                Case Manager PIN detected. Please enter your email to continue.
-            </div>
-        <% } %>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 3: LOGIN FORM -->
-        <!-- ========================================== -->
+        
+        <!-- Login Form -->
         <form action="/caseManagersAuth/login" method="POST" id="loginForm">
             <div class="formGroup">
-                <label class="formLabel" for="pin">Case Manager PIN</label>
-                <input
-                    type="text"
-                    id="pin"
-                    name="pin"
-                    class="formInput"
-                    placeholder="XX-000000"
-                    value="<%= typeof pin !== 'undefined' ? pin : '' %>"
-                    <%= (typeof pin !== 'undefined' && pin) ? 'readonly' : '' %>
-                    required
-                >
-                <p class="formHint">Find this in your invitation email from QOLAE</p>
-            </div>
-
-            <div class="formGroup">
-                <label class="formLabel" for="email">Email Address</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    class="formInput"
-                    placeholder="your@email.com"
+                <label class="formLabel" for="caseManagerPin">
+                    🔑 Your Case Manager PIN
+                </label>
+                <input 
+                    type="text" 
+                    id="caseManagerPin" 
+                    name="caseManagerPin" 
+                    class="formInput" 
+                    placeholder="Enter your unique PIN (e.g., CM-123456)"
+                    value="<%= typeof caseManagerPin !== 'undefined' ? caseManagerPin : '' %>"
                     required
                     autofocus
+                    pattern="[A-Z]{1,10}-\d{6}"
+                    title="Format: LETTERS-NUMBERS (e.g., CM-123456)"
                 >
-                <p class="formHint">Use the email address where you received your invitation</p>
+                <p class="formHint">
+                    📧 Your PIN was sent to your registered email address
+                </p>
             </div>
-
-            <button type="submit" class="btnPrimary" id="submitBtn">
-                Continue to Verification
+            
+            <div class="formGroup">
+                <label class="formLabel" for="email">
+                    📧 Email Address
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="formInput" 
+                    placeholder="your.email@example.com"
+                    required
+                    autocomplete="email"
+                >
+                <p class="formHint">
+                    Use the email address associated with your account
+                </p>
+            </div>
+            
+            <button type="submit" class="btnPrimary" id="loginBtn">
+                🚀 Access Professional Workspace
             </button>
         </form>
-
-        <!-- ========================================== -->
-        <!-- LOCATION BLOCK 4: SECURITY BADGE -->
-        <!-- ========================================== -->
-        <div class="securityBadge">
-            <svg viewBox="0 0 24 24">
-                <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
-            </svg>
-            <span>Secured with 2FA & GDPR Compliant</span>
+        
+        <!-- Security Notice -->
+        <div class="securityNotice">
+            <p>🛡️ Your data is protected with enterprise-grade encryption and GDPR compliance</p>
         </div>
-
-        <p class="footerText">2025 QOLAE. All rights reserved.</p>
+        
+        <p class="footerText">© 2025 QOLAE. All rights reserved.</p>
     </div>
-
-    <!-- ========================================== -->
-    <!-- LOCATION BLOCK 5: JAVASCRIPT -->
-    <!-- ========================================== -->
+    
     <script>
-        // Form submission handling
+        // Form submission handler
         document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.textContent = 'Verifying...';
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = '⏳ Verifying credentials...';
         });
-
-        // Auto-focus email if PIN is pre-filled
-        window.addEventListener('DOMContentLoaded', function() {
-            const pinInput = document.getElementById('pin');
-            const emailInput = document.getElementById('email');
-
-            if (pinInput.value && pinInput.hasAttribute('readonly')) {
-                emailInput.focus();
-            }
+        
+        // PIN format helper
+        const pinInput = document.getElementById('caseManagerPin');
+        pinInput.addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
         });
     </script>
 </body>
