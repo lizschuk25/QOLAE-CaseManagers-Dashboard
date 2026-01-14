@@ -54,44 +54,44 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
   // ==============================================
 
   fastify.post('/caseManagersAuth/login', async (request, reply) => {
-    const { email, pin } = request.body;
+    const { email, caseManagerPin } = request.body;
     const userIP = request.ip;
 
     // GDPR Audit Log
     fastify.log.info({
       event: 'caseManagerLoginAttempt',
-      pin: pin,
+      caseManagerPin: caseManagerPin,
       email: email,
       ip: userIP,
       timestamp: new Date().toISOString(),
       gdprCategory: 'authentication'
     });
 
-    if (!email || !pin) {
-      return reply.code(302).redirect(`/caseManagersLogin?pin=${pin || ''}&error=${encodeURIComponent('Email and PIN are required')}`);
+    if (!email || !caseManagerPin) {
+      return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin || ''}&error=${encodeURIComponent('Email and Case Manager PIN are required')}`);
     }
 
     try {
       // Validate PIN format first
       const pinValidation = await axios.post('/api/pin/validate', {
-        pin: pin,
+        pin: caseManagerPin,
         userType: 'caseManager'
       });
 
       if (!pinValidation.data.validation.isValid) {
         fastify.log.warn({
           event: 'invalidPinFormat',
-          pin: pin,
+          caseManagerPin: caseManagerPin,
           errors: pinValidation.data.validation.errors
         });
 
-        return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}&error=${encodeURIComponent('Invalid PIN format')}`);
+        return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=${encodeURIComponent('Invalid PIN format')}`);
       }
 
       // Call SSOT API for authentication
       const apiResponse = await axios.post('/auth/caseManagers/requestToken', {
         email: email,
-        pin,
+        caseManagerPin: caseManagerPin,
         source: 'casemanagers-portal',
         ip: userIP
       });
@@ -99,7 +99,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
       if (apiResponse.data.success) {
         fastify.log.info({
           event: 'caseManagerLoginSuccess',
-          pin: pin,
+          caseManagerPin: caseManagerPin,
           complianceSubmitted: apiResponse.data.caseManager.complianceSubmitted
         });
 
@@ -109,35 +109,35 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
           if (!jwtToken) {
             fastify.log.warn({
               event: 'loginNoJWT',
-              pin: pin,
+              caseManagerPin: caseManagerPin,
               gdprCategory: 'authentication'
             });
-            return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}&error=${encodeURIComponent('Session expired. Please click your PIN link again.')}`);
+            return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=${encodeURIComponent('Session expired. Please click your PIN link again.')}`);
           }
 
           // Validate JWT token via SSOT
           const validationResponse = await axios.post(
-            `${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/session/validate`,
+            `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/session/validate`,
             { token: jwtToken }
           );
 
           if (!validationResponse.data.success || !validationResponse.data.valid) {
             fastify.log.warn({
               event: 'loginInvalidJWT',
-              pin: pin,
+              caseManagerPin: caseManagerPin,
               error: validationResponse.data.error || 'Invalid token',
               gdprCategory: 'authentication'
             });
-            return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}&error=${encodeURIComponent('Session expired. Please click your PIN link again.')}`);
+            return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=${encodeURIComponent('Session expired. Please click your PIN link again.')}`);
           }
 
           // Verify PIN matches JWT payload
           const caseManagerData = validationResponse.data.caseManager;
-          if (caseManagerData.pin !== pin) {
+          if (caseManagerData.caseManagerPin !== caseManagerPin) {
             fastify.log.info({
               event: 'loginPinMismatch',
-              expectedPin: caseManagerData.pin,
-              providedPin: pin,
+              expectedPin: caseManagerData.caseManagerPin,
+              providedPin: caseManagerPin,
               action: 'clearingOldCookie',
               gdprCategory: 'authentication'
             });
@@ -145,12 +145,12 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
               path: '/',
               domain: process.env.COOKIE_DOMAIN || '.qolae.com'
             });
-            return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}`);
+            return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}`);
           }
 
           fastify.log.info({
             event: 'jwtValidated',
-            pin: pin,
+            caseManagerPin: caseManagerPin,
             expiresAt: validationResponse.data.expiresAt,
             gdprCategory: 'authentication'
           });
@@ -161,35 +161,35 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
         } catch (sessionError) {
           fastify.log.error({
             event: 'sessionCreationError',
-            pin: pin,
+            caseManagerPin: caseManagerPin,
             error: sessionError.message,
             stack: sessionError.stack
           });
 
-          return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}&error=${encodeURIComponent('Failed to create session. Please try again.')}`);
+          return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=${encodeURIComponent('Failed to create session. Please try again.')}`);
         }
       } else {
         fastify.log.warn({
           event: 'caseManagerLoginFailed',
-          pin: pin,
+          caseManagerPin: caseManagerPin,
           error: apiResponse.data.error
         });
 
-        return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}&error=${encodeURIComponent(apiResponse.data.error || 'Authentication failed')}`);
+        return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=${encodeURIComponent(apiResponse.data.error || 'Authentication failed')}`);
       }
     } catch (err) {
       fastify.log.error({
         event: 'caseManagerLoginError',
-        pin: pin,
+        caseManagerPin: caseManagerPin,
         error: err.message,
         stack: err.stack
       });
 
       if (err.response?.data?.error) {
-        return reply.code(302).redirect(`/caseManagersLogin?pin=${pin}&error=${encodeURIComponent(err.response.data.error)}`);
+        return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=${encodeURIComponent(err.response.data.error)}`);
       }
 
-      return reply.code(302).redirect(`/caseManagersLogin?pin=${pin || ''}&error=${encodeURIComponent('Authentication service unavailable. Please try again.')}`);
+      return reply.code(302).redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin || ''}&error=${encodeURIComponent('Authentication service unavailable. Please try again.')}`);
     }
   });
 
@@ -213,7 +213,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
 
     try {
       const ssotResponse = await axios.post(
-        `${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/2fa/requestCode`,
+        `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/2fa/requestCode`,
         {
           ipAddress: userIP,
           userAgent: request.headers['user-agent']
@@ -230,7 +230,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
       if (ssotData.success) {
         fastify.log.info({
           event: 'verificationCodeRequested',
-          pin: ssotData.caseManager?.pin,
+          caseManagerPin: ssotData.caseManager?.caseManagerPin,
           email: ssotData.caseManager?.email,
           sessionId: sessionId.substring(0, 10) + '...',
           gdprCategory: 'authentication'
@@ -307,7 +307,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
 
     try {
       const ssotResponse = await axios.post(
-        `${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/2fa/verifyCode`,
+        `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/2fa/verifyCode`,
         {
           verificationCode: verificationCode,
           ipAddress: userIP,
@@ -323,15 +323,15 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
       const ssotData = ssotResponse.data;
 
       if (ssotData.success) {
-        const pin = ssotData.caseManager.pin;
+        const caseManagerPin = ssotData.caseManager.caseManagerPin;
         const caseManagerData = ssotData.caseManager;
         const jwtToken = ssotData.accessToken;
 
-        console.log(`JWT token received from SSOT for PIN: ${pin}`);
+        console.log(`JWT token received from SSOT for Case Manager PIN: ${caseManagerPin}`);
 
         fastify.log.info({
           event: '2faVerificationSuccess',
-          pin: pin,
+          caseManagerPin: caseManagerPin,
           complianceSubmitted: caseManagerData.complianceSubmitted,
           sessionId: sessionId.substring(0, 10) + '...',
           jwtReceived: !!jwtToken,
@@ -343,15 +343,15 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
         // Case Managers MUST complete compliance before password setup
         // ===============================================================
         if (!caseManagerData.complianceSubmitted) {
-          console.log(`[2FA] Case Manager ${pin} needs compliance - redirecting to HRCompliance`);
-          return reply.code(302).redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/caseManagersCompliance?pin=${pin}&verified=true`);
+          console.log(`[2FA] Case Manager ${caseManagerPin} needs compliance - redirecting to HRCompliance`);
+          return reply.code(302).redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/caseManagersCompliance?caseManagerPin=${caseManagerPin}&verified=true`);
         }
 
         // Redirect based on password setup status
         if (ssotData.passwordSetupCompleted) {
-          return reply.code(302).redirect(`/secureLogin?pin=${pin}&setupCompleted=true`);
+          return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin}&setupCompleted=true`);
         } else {
-          return reply.code(302).redirect(`/secureLogin?pin=${pin}&verified=true`);
+          return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin}&verified=true`);
         }
       } else {
         fastify.log.warn({
@@ -399,7 +399,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
   // ==============================================
 
   fastify.post('/caseManagersAuth/secureLogin', async (request, reply) => {
-    const { password, isNewUser } = request.body;
+    const { password, passwordConfirm, isNewUser, caseManagerPin } = request.body;
     const userIP = request.ip;
 
     fastify.log.info({
@@ -426,6 +426,17 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
       return reply.code(302).redirect('/secureLogin?error=' + encodeURIComponent('Password is required'));
     }
 
+    // Server-side password match validation (for new users and password reset)
+    if (passwordConfirm && password !== passwordConfirm) {
+      fastify.log.warn({
+        event: 'passwordMismatch',
+        caseManagerPin: caseManagerPin,
+        ip: userIP,
+        gdprCategory: 'authentication'
+      });
+      return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin || ''}&error=${encodeURIComponent('Passwords do not match. Please try again.')}`);
+    }
+
     try {
       const endpoint = isNewUser === 'true' || isNewUser === true
         ? '/auth/caseManagers/passwordSetup'
@@ -434,7 +445,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
       console.log(`Calling SSOT ${endpoint}`);
 
       const ssotResponse = await axios.post(
-        `${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}${endpoint}`,
+        `${process.env.API_BASE_URL || 'https://api.qolae.com'}${endpoint}`,
         {
           password: password,
           ipAddress: userIP,
@@ -464,16 +475,16 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
 
         fastify.log.info({
           event: isNewUser ? 'passwordSetupSuccess' : 'passwordVerifySuccess',
-          pin: ssotData.caseManager?.pin,
+          caseManagerPin: ssotData.caseManager?.caseManagerPin,
           gdprCategory: 'authentication'
         });
 
         // Redirect to Dashboard
-        const pin = ssotData.caseManager?.pin;
-        if (!pin) {
+        const caseManagerPin = ssotData.caseManager?.caseManagerPin;
+        if (!caseManagerPin) {
           return reply.code(302).redirect('/secureLogin?error=' + encodeURIComponent('Session data incomplete'));
         }
-        return reply.code(302).redirect(`/caseManagersDashboard?pin=${encodeURIComponent(pin)}`);
+        return reply.code(302).redirect(`/caseManagersDashboard?caseManagerPin=${encodeURIComponent(caseManagerPin)}`);
 
       } else {
         fastify.log.warn({

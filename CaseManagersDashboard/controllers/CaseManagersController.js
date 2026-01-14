@@ -1,12 +1,12 @@
 // ┌────────────────────────────────────────────┐
 // │ QOLAE CaseManagersController.js            │
 // │ Author: Liz 👑                             │
-// │ Description: Handles Case Managers Dashboard  │
+// │ Description:Handles Case Managers Dashboard│
 // │ Steps:                                     │
 // │ 1️⃣ Generates Case Manager PIN  │
-// │ 2️⃣ Verifies Case Manager Registration             │
+// │ 2️⃣ Verifies Case Manager Registration      │
 // │ 3️⃣ Registers Case Manager                          │
-// │ 4️⃣ Sends Email Invitation                   │
+// │ 4️⃣ Sends Email Invitation                  │
 // └────────────────────────────────────────────┘
 
 // ==============================================

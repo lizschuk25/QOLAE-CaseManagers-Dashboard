@@ -2,9 +2,8 @@
 // CASE MANAGERS ROUTES
 // ==============================================
 // Purpose: Handles all Case Managers Dashboard operations
-// including Readers Registration workflow
 // Used by: Case Managers Dashboard (casemanagers.qolae.com)
-// Database: qolae_readers (PostgreSQL)
+// Database: qolae_casemanagers (PostgreSQL)
 // ==============================================
 
 import CaseManagersController from '../controllers/CaseManagersController.js';

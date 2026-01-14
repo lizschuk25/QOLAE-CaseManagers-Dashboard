@@ -29,9 +29,6 @@ import fastifyView from '@fastify/view';
 import cookie from '@fastify/cookie';
 import ejs from 'ejs';
 
-// Import session middleware
-import sessionMiddleware, { createSession, SESSION_CONFIG } from './middleware/sessionManager.js';
-
 // ES6 module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -106,9 +103,6 @@ fastify.register(fastifyView, {
   root: path.join(__dirname, 'views')
 });
 
-// B.6: Session Middleware (HTTP-only cookie management)
-fastify.register(sessionMiddleware);
-
 // ==============================================
 // LOCATION BLOCK C: AUTHENTICATION SETUP
 // C.1: JWT Configuration
@@ -172,14 +166,14 @@ fastify.get('/', async (request, reply) => {
 
 // 1.2a: Case Managers Login Page - Main Route with PIN Access via SSOT
 fastify.get('/caseManagersLogin', async (request, reply) => {
-  const { pin } = request.query;
+  const { caseManagerPin } = request.query;
   const userIP = request.ip;
   const userAgent = request.headers['user-agent'];
 
   // ===============================================================
   // SCENARIO A: NO PIN = Show Login Form (Logout/Direct Access)
   // ===============================================================
-  if (!pin) {
+  if (!caseManagerPin) {
     return reply.view('caseManagersLogin.ejs', {
       title: 'QOLAE Case Managers Login',
       error: request.query.error || null,
@@ -194,12 +188,12 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
   // ===============================================================
 
   try {
-    console.log(`[SSOT] PIN Access request for: ${pin}`);
+    console.log(`[SSOT] PIN Access request for: ${caseManagerPin}`);
 
     const deviceFingerprint = generateDeviceFingerprint(request);
 
-    const ssotResponse = await axios.post(`${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/pinAccess`, {
-      pin: pin,
+    const ssotResponse = await axios.post(`${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/pinAccess`, {
+      caseManagerPin: caseManagerPin,
       deviceFingerprint: deviceFingerprint,
       ipAddress: userIP,
       userAgent: userAgent
@@ -212,7 +206,7 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
       return reply.code(401).send('Invalid Case Manager PIN');
     }
 
-    console.log(`[SSOT] PIN Access successful for: ${pin}, isNew: ${ssotData.isNewCaseManager}`);
+    console.log(`[SSOT] PIN Access successful for: ${caseManagerPin}, isNew: ${ssotData.isNewCaseManager}`);
 
     // Initialize session if it doesn't exist
     if (!request.session) {
@@ -220,7 +214,7 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
     }
 
     request.session.caseManager = {
-      pin: ssotData.caseManager.pin,
+      caseManagerPin: ssotData.caseManager.caseManagerPin,
       email: ssotData.caseManager.email,
       firstName: ssotData.caseManager.firstName,
       lastName: ssotData.caseManager.lastName,
@@ -245,7 +239,7 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
 
     return reply.view('caseManagersLogin.ejs', {
       title: 'QOLAE Case Managers Login',
-      pin: ssotData.caseManager.pin,
+      caseManagerPin: ssotData.caseManager.caseManagerPin,
       email: ssotData.caseManager.email,
       firstName: ssotData.caseManager.firstName,
       lastName: ssotData.caseManager.lastName,
@@ -278,8 +272,8 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
 
 // 1.2b: Backward compatibility redirect
 fastify.get('/login', async (request, reply) => {
-  const { pin } = request.query;
-  const redirectUrl = pin ? `/caseManagersLogin?pin=${pin}` : '/caseManagersLogin';
+  const { caseManagerPin } = request.query;
+  const redirectUrl = caseManagerPin ? `/caseManagersLogin?caseManagerPin=${caseManagerPin}` : '/caseManagersLogin';
   return reply.redirect(redirectUrl);
 });
 
@@ -291,7 +285,7 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
     return reply.view('caseManagers2fa.ejs', {
       title: '2-Way Authentication - QOLAE Case Managers Portal',
       error: 'No active session. Please return to login.',
-      pin: null,
+      caseManagerPin: null,
       email: null,
       firstName: null,
       lastName: null,
@@ -302,7 +296,7 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
 
   try {
     const sessionResponse = await axios.post(
-      `${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/session/validate`,
+      `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/session/validate`,
       { token: sessionId }
     );
 
@@ -310,7 +304,7 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
       return reply.view('caseManagers2fa.ejs', {
         title: '2-Way Authentication - QOLAE Case Managers Portal',
         error: sessionResponse.data.error || 'Session invalid. Please return to login.',
-        pin: null,
+        caseManagerPin: null,
         email: null,
         firstName: null,
         lastName: null,
@@ -323,7 +317,7 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
 
     return reply.view('caseManagers2fa.ejs', {
       title: '2-Way Authentication - QOLAE Case Managers Portal',
-      pin: caseManager.pin,
+      caseManagerPin: caseManager.caseManagerPin,
       email: caseManager.email,
       firstName: caseManager.firstName,
       lastName: caseManager.lastName,
@@ -337,7 +331,7 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
     return reply.view('caseManagers2fa.ejs', {
       title: '2-Way Authentication - QOLAE Case Managers Portal',
       error: 'An error occurred. Please return to login.',
-      pin: null,
+      caseManagerPin: null,
       email: null,
       firstName: null,
       lastName: null,
@@ -349,25 +343,25 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
 
 // 1.4a: Secure Login (Password Setup) - WITH HRCOMPLIANCE GATE
 fastify.get('/secureLogin', async (req, reply) => {
-  const { verified, pin } = req.query;
+  const { verified, caseManagerPin } = req.query;
   const token = req.cookies.qolaeCaseManagerToken;
 
   reply.header('Cache-Control', 'no-cache, no-store, must-revalidate');
   reply.header('Pragma', 'no-cache');
   reply.header('Expires', '0');
 
-  if (!pin) {
+  if (!caseManagerPin) {
     return reply.code(400).send('Case Manager PIN required');
   }
 
   if (!token) {
     console.log('[SecureLogin] No JWT token found, redirecting to login');
-    return reply.redirect(`/caseManagersLogin?pin=${pin}&error=sessionExpired`);
+    return reply.redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=sessionExpired`);
   }
 
   try {
     const statusResponse = await axios.get(
-      `${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/loginStatus`,
+      `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/loginStatus`,
       {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -377,19 +371,19 @@ fastify.get('/secureLogin', async (req, reply) => {
 
     if (!statusResponse.data.success) {
       console.log('[SecureLogin] SSOT status check failed:', statusResponse.data.error);
-      return reply.redirect(`/caseManagersLogin?pin=${pin}&error=statusCheckFailed`);
+      return reply.redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=statusCheckFailed`);
     }
 
     const caseManager = statusResponse.data.caseManager;
-    console.log(`[SecureLogin] SSOT status retrieved for: ${caseManager.pin}`);
+    console.log(`[SecureLogin] SSOT status retrieved for: ${caseManager.caseManagerPin}`);
 
     // ===============================================================
     // HRCOMPLIANCE GATE CHECK
     // Case Managers must complete compliance before accessing dashboard
     // ===============================================================
     if (!caseManager.complianceSubmitted) {
-      console.log(`[SecureLogin] Case Manager ${caseManager.pin} needs compliance - redirecting to HRCompliance`);
-      return reply.redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/newStarterCompliance?pin=${pin}`);
+      console.log(`[SecureLogin] Case Manager ${caseManager.caseManagerPin} needs compliance - redirecting to HRCompliance`);
+      return reply.redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/newStarterCompliance?caseManagerPin=${caseManagerPin}`);
     }
 
     const userStatus = {
@@ -441,8 +435,8 @@ fastify.get('/secureLogin', async (req, reply) => {
     }
 
     // Security logging (non-blocking)
-    await axios.post(`${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/securityLog`, {
-      pin: pin,
+    await axios.post(`${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/securityLog`, {
+      caseManagerPin: caseManagerPin,
       eventType: 'secureLoginPageAccessed',
       eventStatus: 'success',
       details: {
@@ -460,7 +454,7 @@ fastify.get('/secureLogin', async (req, reply) => {
     return reply.view('secureLogin.ejs', {
       title: 'Secure Login - QOLAE Case Managers Portal',
       verified: verified || false,
-      pin: pin,
+      pin: caseManagerPin,
       state: isPasswordReset ? 'resetPassword' : (userStatus.isFirstTime ? 'createPassword' : 'loginPassword'),
       userStatus: userStatus,
       uiState: uiState,
@@ -481,8 +475,8 @@ fastify.get('/secureLogin', async (req, reply) => {
   } catch (error) {
     console.error('SecureLogin SSOT error:', error.message);
 
-    await axios.post(`${process.env.API_DASHBOARD_URL || 'https://api.qolae.com'}/auth/caseManagers/securityLog`, {
-      pin: pin,
+    await axios.post(`${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/securityLog`, {
+      caseManagerPin: caseManagerPin,
       eventType: 'secureLoginError',
       eventStatus: 'failure',
       details: { error: error.message, source: 'CaseManagersLoginPortal' },
@@ -491,7 +485,7 @@ fastify.get('/secureLogin', async (req, reply) => {
       riskScore: 30
     }).catch(err => console.log('[SecureLogin] Error log failed (non-blocking):', err.message));
 
-    return reply.redirect(`/caseManagersLogin?pin=${pin}&error=secureLoginFailed`);
+    return reply.redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=secureLoginFailed`);
   }
 });
 
@@ -508,21 +502,21 @@ fastify.post('/logout', async (request, reply) => {
 // LOCATION BLOCK 2: HELPER FUNCTIONS
 // ==============================================
 
-const checkCaseManagerInSystem = async (pin) => {
+const checkCaseManagerInSystem = async (caseManagerPin) => {
   try {
-    const response = await axios.get(`/api/caseManager/validate/${pin}`);
+    const response = await axios.get(`/api/caseManager/validate/${caseManagerPin}`);
     const result = response.data;
 
     if (result.success && result.caseManager) {
-      fastify.log.info(`Case Manager found via API: ${result.caseManager.firstName} ${result.caseManager.lastName} (${result.caseManager.pin})`);
+      fastify.log.info(`Case Manager found via API: ${result.caseManager.firstName} ${result.caseManager.lastName} (${result.caseManager.caseManagerPin})`);
       return {
-        pin: result.caseManager.pin,
+        caseManagerPin: result.caseManager.caseManagerPin,
         email: result.caseManager.email,
         firstName: result.caseManager.firstName,
         lastName: result.caseManager.lastName
       };
     } else {
-      fastify.log.warn(`Case Manager not found via API: ${pin}`);
+      fastify.log.warn(`Case Manager not found via API: ${caseManagerPin}`);
       return null;
     }
   } catch (error) {
