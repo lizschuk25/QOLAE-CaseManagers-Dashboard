@@ -28,7 +28,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #ffffff;
+      background: linear-gradient(180deg, #3BA8B8 0%, #2A9D8F 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -50,7 +50,7 @@
 
     /* B.3: LOGO & BRANDING */
     .qolae-logo {
-      margin-bottom: 60px;
+      margin-bottom: 30px;
       text-align: center;
       background: none;
       border: none;
@@ -411,29 +411,29 @@
       <% } %>
     </div>
 
-    <!-- C.5: SERVER-SIDE Verification Message -->
-    <% if (verified === true || (typeof query !== 'undefined' && query.verified === 'true')) { %>
+    <!-- C.5: Verification Message -->
+    <% if (verified) { %>
       <div class="verification-info">
-        <p>✅ Email verification successful! Please complete secure login.</p>
+        <p>Email verification successful! Please complete secure login.</p>
       </div>
-    <% } else if (typeof query !== 'undefined' && query.setupCompleted === 'true') { %>
+    <% } else if (setupCompleted) { %>
       <div class="verification-info">
-        <p>🔐 Your professional workspace is already set up! Please use your secure login credentials below.</p>
+        <p>Your professional workspace is already set up! Please use your secure login credentials below.</p>
       </div>
     <% } %>
 
-    <!-- C.6: SERVER-SIDE Error Message -->
-    <% if (typeof query !== 'undefined' && query.error) { %>
+    <!-- C.6: Error Message -->
+    <% if (errorMessage) { %>
       <div class="error-message">
-        <%= decodeURIComponent(query.error) %>
+        <%= errorMessage %>
       </div>
     <% } %>
 
-    <!-- C.7: SERVER-SIDE New Device Warning -->
-    <% if (typeof query !== 'undefined' && query.newDevice === 'true') { %>
+    <!-- C.7: New Device Warning -->
+    <% if (newDevice) { %>
       <div class="warning-message">
-        <strong>🔐 New Device Detected!</strong><br>
-        Previous login from: <%= query.previousIp || 'unknown' %><br>
+        <strong>New Device Detected!</strong><br>
+        Previous login from: <%= previousIp || 'unknown' %><br>
         <small>If this wasn't you, please contact support.</small>
       </div>
     <% } %>

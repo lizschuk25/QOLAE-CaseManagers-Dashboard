@@ -90,7 +90,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
 
       // Call SSOT API for authentication
       const apiResponse = await axios.post('/auth/caseManagers/requestToken', {
-        email: email,
+        caseManagerEmail: email,
         caseManagerPin: caseManagerPin,
         source: 'casemanagers-portal',
         ip: userIP
@@ -423,7 +423,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
     }
 
     if (!password) {
-      return reply.code(302).redirect('/secureLogin?error=' + encodeURIComponent('Password is required'));
+      return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin || ''}&error=` + encodeURIComponent('Password is required'));
     }
 
     // Server-side password match validation (for new users and password reset)
@@ -480,9 +480,9 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
         });
 
         // Redirect to Dashboard
-        const caseManagerPin = ssotData.caseManager?.caseManagerPin;
-        if (!caseManagerPin) {
-          return reply.code(302).redirect('/secureLogin?error=' + encodeURIComponent('Session data incomplete'));
+        const ssotCaseManagerPin = ssotData.caseManager?.caseManagerPin;
+        if (!ssotCaseManagerPin) {
+          return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin || ''}&error=` + encodeURIComponent('Session data incomplete'));
         }
         return reply.code(302).redirect(`/caseManagersDashboard?caseManagerPin=${encodeURIComponent(caseManagerPin)}`);
 
@@ -493,7 +493,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
           gdprCategory: 'authentication'
         });
 
-        return reply.code(302).redirect('/secureLogin?error=' + encodeURIComponent(ssotData.error || 'Password operation failed'));
+        return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin || ''}&error=` + encodeURIComponent(ssotData.error || 'Password operation failed'));
       }
 
     } catch (err) {
@@ -513,7 +513,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
         }
 
         if (status === 409) {
-          return reply.code(302).redirect('/secureLogin?setupCompleted=true&error=' + encodeURIComponent('Password already set up. Please enter your password.'));
+          return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin || ''}&setupCompleted=true&error=` + encodeURIComponent('Password already set up. Please enter your password.'));
         }
       }
 
@@ -524,7 +524,7 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
         gdprCategory: 'authentication'
       });
 
-      return reply.code(302).redirect('/secureLogin?error=' + encodeURIComponent('Authentication service unavailable'));
+      return reply.code(302).redirect(`/secureLogin?caseManagerPin=${caseManagerPin || ''}&error=` + encodeURIComponent('Authentication service unavailable'));
     }
   });
 

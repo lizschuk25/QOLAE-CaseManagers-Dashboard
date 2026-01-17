@@ -176,6 +176,11 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
   if (!caseManagerPin) {
     return reply.view('caseManagersLogin.ejs', {
       title: 'QOLAE Case Managers Login',
+      caseManagerPin: '',
+      email: '',
+      caseManagerName: '',
+      isFirstAccess: false,
+      tokenStatus: '',
       error: request.query.error || null,
       success: request.query.success || null,
       message: 'Please enter your Case Manager PIN and email address to log in'
@@ -280,18 +285,24 @@ fastify.get('/login', async (request, reply) => {
 // 1.3: 2FA Authentication Page
 fastify.get('/caseManagers2fa', async (request, reply) => {
   const sessionId = request.cookies.qolaeCaseManagerToken;
+  const codeSent = request.query.codeSent === 'true';
+  const errorMsg = request.query.error ? decodeURIComponent(request.query.error) : '';
+
+  // Default view data - always pass all variables
+  const viewData = {
+    title: '2-Way Authentication - QOLAE Case Managers Portal',
+    caseManagerPin: '',
+    email: '',
+    caseManagerName: '',
+    authToken: '',
+    codeSent: codeSent,
+    error: errorMsg,
+    success: codeSent ? 'Verification code sent! Check your email inbox.' : ''
+  };
 
   if (!sessionId) {
-    return reply.view('caseManagers2fa.ejs', {
-      title: '2-Way Authentication - QOLAE Case Managers Portal',
-      error: 'No active session. Please return to login.',
-      caseManagerPin: null,
-      email: null,
-      firstName: null,
-      lastName: null,
-      authToken: null,
-      query: request.query
-    });
+    viewData.error = 'No active session. Please return to login.';
+    return reply.view('caseManagers2fa.ejs', viewData);
   }
 
   try {
@@ -301,43 +312,23 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
     );
 
     if (!sessionResponse.data.success) {
-      return reply.view('caseManagers2fa.ejs', {
-        title: '2-Way Authentication - QOLAE Case Managers Portal',
-        error: sessionResponse.data.error || 'Session invalid. Please return to login.',
-        caseManagerPin: null,
-        email: null,
-        firstName: null,
-        lastName: null,
-        authToken: null,
-        query: request.query
-      });
+      viewData.error = sessionResponse.data.error || 'Session invalid. Please return to login.';
+      return reply.view('caseManagers2fa.ejs', viewData);
     }
 
     const caseManager = sessionResponse.data.caseManager;
 
-    return reply.view('caseManagers2fa.ejs', {
-      title: '2-Way Authentication - QOLAE Case Managers Portal',
-      caseManagerPin: caseManager.caseManagerPin,
-      email: caseManager.email,
-      firstName: caseManager.firstName,
-      lastName: caseManager.lastName,
-      authToken: sessionId,
-      query: request.query
-    });
+    viewData.caseManagerPin = caseManager.caseManagerPin || '';
+    viewData.email = caseManager.caseManagerEmail || '';
+    viewData.caseManagerName = caseManager.caseManagerName || '';
+    viewData.authToken = sessionId;
+
+    return reply.view('caseManagers2fa.ejs', viewData);
 
   } catch (error) {
     fastify.log.error('2FA page error:', error.message);
-
-    return reply.view('caseManagers2fa.ejs', {
-      title: '2-Way Authentication - QOLAE Case Managers Portal',
-      error: 'An error occurred. Please return to login.',
-      caseManagerPin: null,
-      email: null,
-      firstName: null,
-      lastName: null,
-      authToken: null,
-      query: request.query
-    });
+    viewData.error = 'An error occurred. Please return to login.';
+    return reply.view('caseManagers2fa.ejs', viewData);
   }
 });
 
@@ -453,8 +444,8 @@ fastify.get('/secureLogin', async (req, reply) => {
 
     return reply.view('secureLogin.ejs', {
       title: 'Secure Login - QOLAE Case Managers Portal',
-      verified: verified || false,
-      pin: caseManagerPin,
+      verified: verified === 'true' || verified === true,
+      caseManagerPin: caseManagerPin,
       state: isPasswordReset ? 'resetPassword' : (userStatus.isFirstTime ? 'createPassword' : 'loginPassword'),
       userStatus: userStatus,
       uiState: uiState,
@@ -463,13 +454,15 @@ fastify.get('/secureLogin', async (req, reply) => {
       progressSteps: progressSteps,
       progressPercentage: progressPercentage,
       completedSteps: completedSteps,
-      firstName: caseManager.firstName,
-      lastName: caseManager.lastName,
-      email: caseManager.email,
+      caseManagerName: caseManager.caseManagerName || `${caseManager.firstName || ''} ${caseManager.lastName || ''}`.trim(),
+      caseManagerEmail: caseManager.caseManagerEmail || caseManager.email || '',
       tokenStatus: userStatus.tokenStatus,
       isFirstTime: userStatus.isFirstTime,
       hasPassword: userStatus.hasPassword,
-      query: req.query
+      setupCompleted: req.query.setupCompleted === 'true',
+      errorMessage: req.query.error ? decodeURIComponent(req.query.error) : '',
+      newDevice: req.query.newDevice === 'true',
+      previousIp: req.query.previousIp || ''
     });
 
   } catch (error) {
