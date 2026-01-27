@@ -77,6 +77,9 @@ await server.register(fastifyView, {
 // Case Managers Routes (Readers Registration, etc.)
 await server.register(import('./routes/caseManagerRoutes.js'));
 
+// NDA Workflow Routes (4-step process)
+await server.register(import('./routes/ndaRoutes.js'));
+
 // ==============================================
 // ROOT ROUTE
 // ==============================================

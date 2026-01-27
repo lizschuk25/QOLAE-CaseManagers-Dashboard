@@ -50,7 +50,7 @@ async function insertSignaturesIntoNDA(caseManagerPin, signatureData) {
 
     // Load PDF from finalNda folder
     const { finalNdaDir, signedNdaDir, signaturesDir } = getDirectoryPaths();
-    const pdfPath = path.join(finalNdaDir, `NDA_CaseManager_${caseManagerPin}.pdf`);
+    const pdfPath = path.join(finalNdaDir, `caseManagersNda${caseManagerPin}.pdf`);
 
     if (!fs.existsSync(pdfPath)) {
       throw new Error(`NDA file not found at: ${pdfPath}`);
@@ -122,7 +122,7 @@ async function insertSignaturesIntoNDA(caseManagerPin, signatureData) {
     }
 
     // Save the signed NDA to protected directory
-    const outputFilename = `NDA_CaseManager_${caseManagerPin}_Signed.pdf`;
+    const outputFilename = `signedCaseManagersNda${caseManagerPin}.pdf`;
     const outputPath = path.join(signedNdaDir, outputFilename);
 
     // Ensure output directory exists
@@ -161,7 +161,7 @@ async function flattenNDA(caseManagerPin) {
     console.log(`Case Manager PIN: ${caseManagerPin}`);
 
     const { signedNdaDir } = getDirectoryPaths();
-    const pdfPath = path.join(signedNdaDir, `NDA_CaseManager_${caseManagerPin}_Signed.pdf`);
+    const pdfPath = path.join(signedNdaDir, `signedCaseManagersNda${caseManagerPin}.pdf`);
 
     if (!fs.existsSync(pdfPath)) {
       throw new Error(`Signed NDA not found at: ${pdfPath}`);

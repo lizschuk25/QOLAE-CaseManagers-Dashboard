@@ -374,7 +374,7 @@ fastify.get('/secureLogin', async (req, reply) => {
     // ===============================================================
     if (!caseManager.complianceSubmitted) {
       console.log(`[SecureLogin] Case Manager ${caseManager.caseManagerPin} needs compliance - redirecting to HRCompliance`);
-      return reply.redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/newStarterCompliance?caseManagerPin=${caseManagerPin}`);
+      return reply.redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/caseManagersCompliance?caseManagerPin=${caseManagerPin}`);
     }
 
     const userStatus = {
@@ -401,7 +401,7 @@ fastify.get('/secureLogin', async (req, reply) => {
     let actionRequired = '';
 
     const isPasswordReset = req.query.reset === 'true' || req.query.forgot === 'true';
-    const fullName = `${caseManager.firstName} ${caseManager.lastName}`;
+    const fullName = caseManager.caseManagerName || 'Case Manager';
 
     if (isPasswordReset) {
       uiState = 'forgotPassword';

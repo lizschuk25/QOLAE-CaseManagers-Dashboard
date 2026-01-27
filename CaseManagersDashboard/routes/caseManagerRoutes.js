@@ -31,15 +31,64 @@ export default async function (fastify, opts) {
    * - 'operational' (Contractor CMs): My Cases tab only
    */
   fastify.get('/caseManagersDashboard', async (req, reply) => {
+    const { caseManagerPin, showModal, step } = req.query;
+    const currentStep = parseInt(step) || 1;
+
     // TODO: Implement authentication to get actual user data
-    // For now, default to management role (Liz)
-    const userData = {
+    // For now, default to management role (Liz) or use PIN from query
+    let userData = {
       cmName: 'Liz',
-      userRole: 'management', // 'management' or 'operational'
-      pin: 'CM-002690'
+      userRole: 'management',
+      pin: caseManagerPin || 'CM-002690'
     };
 
-    return reply.view('case-managers-dashboard', userData);
+    // Modal data for NDA workflow
+    let modalData = null;
+    let caseManager = null;
+
+    if (showModal === 'nda' && caseManagerPin) {
+      // Get case manager data from database
+      const pg = await import('pg');
+      const { Pool } = pg.default;
+      const caseManagersDb = new Pool({
+        connectionString: process.env.CASEMANAGERS_DATABASE_URL
+      });
+
+      try {
+        const cmResult = await caseManagersDb.query(
+          'SELECT "caseManagerPin", "caseManagerName", "ndaSigned" FROM "caseManagers" WHERE "caseManagerPin" = $1',
+          [caseManagerPin]
+        );
+
+        if (cmResult.rows.length > 0) {
+          caseManager = cmResult.rows[0];
+          modalData = {
+            type: 'nda',
+            caseManager: caseManager,
+            currentStep: currentStep
+          };
+        }
+        await caseManagersDb.end();
+      } catch (error) {
+        console.error('[NDA Modal] Error loading case manager data:', error.message);
+      }
+    }
+
+    // Generate CSRF token
+    const csrfToken = fastify.jwt ? fastify.jwt.sign({
+      csrf: true,
+      caseManagerPin: caseManagerPin,
+      timestamp: Date.now()
+    }) : 'csrf-placeholder';
+
+    return reply.view('casemanagersDashboard', {
+      ...userData,
+      showModal: showModal || null,
+      modalData: modalData,
+      caseManager: caseManager || { caseManagerPin: userData.pin, caseManagerName: userData.cmName },
+      csrfToken: csrfToken,
+      currentStep: currentStep
+    });
   });
 
   // ==============================================
