@@ -24,6 +24,68 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ==============================================
+// SSOT CONFIGURATION
+// ==============================================
+// Configure base URL for server-to-server calls to SSOT (API-Dashboard)
+// Follows LawyersDashboard architecture pattern
+const SSOT_BASE_URL = process.env.SSOT_BASE_URL || 'https://api.qolae.com';
+
+// ==============================================
+// SSOT HELPER FUNCTIONS
+// ==============================================
+
+/**
+ * Build case manager bootstrap data from SSOT API
+ * Follows LawyersDashboard buildLawyerBootstrapData() pattern
+ * @param {string} caseManagerPin - Case Manager PIN
+ * @returns {object|null} Bootstrap data or null
+ */
+async function buildCaseManagerBootstrapData(caseManagerPin) {
+  try {
+    console.log(`📊 [SSR] Building bootstrap data for Case Manager PIN: ${caseManagerPin}`);
+
+    // Step 1: Get stored JWT token from SSOT (caseManagers-namespaced endpoint)
+    const tokenResponse = await fetch(`${SSOT_BASE_URL}/auth/caseManagers/getStoredToken?caseManagerPin=${caseManagerPin}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!tokenResponse.ok) {
+      console.warn(`⚠️ [SSR] No valid JWT token found for caseManagerPin: ${caseManagerPin}`);
+      return null;
+    }
+
+    const tokenData = await tokenResponse.json();
+    const { accessToken } = tokenData;
+
+    // Step 2: Call SSOT bootstrap endpoint with stored JWT token (caseManagers-namespaced)
+    const bootstrapResponse = await fetch(`${SSOT_BASE_URL}/caseManagers/workspace/bootstrap`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (bootstrapResponse.ok) {
+      const bootstrapData = await bootstrapResponse.json();
+      console.log(`✅ [SSR] Bootstrap data fetched successfully for ${caseManagerPin}`);
+      return bootstrapData;
+    } else {
+      console.error(`❌ [SSR] SSOT bootstrap failed:`, bootstrapResponse.status);
+      return null;
+    }
+
+  } catch (error) {
+    console.error(`❌ [SSR] Bootstrap error for ${caseManagerPin}:`, error.message);
+    return null;
+  }
+}
+
+// Make bootstrap function available to routes
+export { buildCaseManagerBootstrapData, SSOT_BASE_URL };
+
+// ==============================================
 // FASTIFY SERVER INITIALIZATION
 // ==============================================
 

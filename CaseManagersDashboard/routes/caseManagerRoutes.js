@@ -4,9 +4,21 @@
 // Purpose: Handles all Case Managers Dashboard operations
 // Used by: Case Managers Dashboard (casemanagers.qolae.com)
 // Database: qolae_casemanagers (PostgreSQL)
+// Architecture: SSOT Bootstrap Pattern (Follows LawyersDashboard)
 // ==============================================
 
 import CaseManagersController from '../controllers/CaseManagersController.js';
+import pg from 'pg';
+
+const { Pool } = pg;
+
+// SSOT Base URL (API-Dashboard)
+const SSOT_BASE_URL = process.env.SSOT_BASE_URL || 'https://api.qolae.com';
+
+// Database connection for modal-specific queries
+const caseManagersDb = new Pool({
+  connectionString: process.env.CASEMANAGERS_DATABASE_URL
+});
 
 export default async function (fastify, opts) {
 
@@ -23,72 +35,125 @@ export default async function (fastify, opts) {
   });
 
   /**
-   * GET /case-managers-dashboard
+   * GET /caseManagersDashboard
    * Display Case Managers Dashboard with role-based rendering
+   * Architecture: 100% Server-Side, SSOT Bootstrap Pattern (Matches LawyersDashboard)
    *
    * Role Types:
    * - 'management' (Liz): All 4 tabs (My Cases, Reader Mgmt, Approval Queue, CM Mgmt)
    * - 'operational' (Contractor CMs): My Cases tab only
    */
   fastify.get('/caseManagersDashboard', async (req, reply) => {
+    reply.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    reply.header('Pragma', 'no-cache');
+    reply.header('Expires', '0');
+
     const { caseManagerPin, showModal, step } = req.query;
     const currentStep = parseInt(step) || 1;
 
-    // TODO: Implement authentication to get actual user data
-    // For now, default to management role (Liz) or use PIN from query
-    let userData = {
-      cmName: 'Liz',
-      userRole: 'management',
-      pin: caseManagerPin || 'CM-002690'
-    };
-
-    // Modal data for NDA workflow
-    let modalData = null;
-    let caseManager = null;
-
-    if (showModal === 'nda' && caseManagerPin) {
-      // Get case manager data from database
-      const pg = await import('pg');
-      const { Pool } = pg.default;
-      const caseManagersDb = new Pool({
-        connectionString: process.env.CASEMANAGERS_DATABASE_URL
-      });
-
-      try {
-        const cmResult = await caseManagersDb.query(
-          'SELECT "caseManagerPin", "caseManagerName", "ndaSigned" FROM "caseManagers" WHERE "caseManagerPin" = $1',
-          [caseManagerPin]
-        );
-
-        if (cmResult.rows.length > 0) {
-          caseManager = cmResult.rows[0];
-          modalData = {
-            type: 'nda',
-            caseManager: caseManager,
-            currentStep: currentStep
-          };
-        }
-        await caseManagersDb.end();
-      } catch (error) {
-        console.error('[NDA Modal] Error loading case manager data:', error.message);
-      }
+    if (!caseManagerPin) {
+      return reply.code(400).send({ error: 'Case Manager PIN required' });
     }
 
-    // Generate CSRF token
-    const csrfToken = fastify.jwt ? fastify.jwt.sign({
-      csrf: true,
-      caseManagerPin: caseManagerPin,
-      timestamp: Date.now()
-    }) : 'csrf-placeholder';
+    try {
+      console.log(`🔍 Case Managers Dashboard route called with PIN: ${caseManagerPin}, Modal: ${showModal || 'none'}`);
 
-    return reply.view('casemanagersDashboard', {
-      ...userData,
-      showModal: showModal || null,
-      modalData: modalData,
-      caseManager: caseManager || { caseManagerPin: userData.pin, caseManagerName: userData.cmName },
-      csrfToken: csrfToken,
-      currentStep: currentStep
-    });
+      // ==============================================
+      // SINGLE SOURCE OF TRUTH - SSOT Bootstrap only
+      // ==============================================
+      // Step 1: Get stored JWT from SSOT
+      const tokenResponse = await fetch(`${SSOT_BASE_URL}/auth/caseManagers/getStoredToken?caseManagerPin=${caseManagerPin}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!tokenResponse.ok) {
+        console.error(`❌ No valid JWT token found for caseManagerPin: ${caseManagerPin}`);
+        return reply.code(401).send({ error: 'Invalid session - please login again' });
+      }
+
+      const tokenData = await tokenResponse.json();
+      const { accessToken } = tokenData;
+
+      // Step 2: Call SSOT bootstrap endpoint
+      const bootstrapResponse = await fetch(`${SSOT_BASE_URL}/caseManagers/workspace/bootstrap`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!bootstrapResponse.ok) {
+        console.error(`❌ SSOT bootstrap failed for caseManagerPin: ${caseManagerPin}`);
+        return reply.code(401).send({ error: 'Invalid session - please login again' });
+      }
+
+      const bootstrapData = await bootstrapResponse.json();
+
+      if (!bootstrapData || !bootstrapData.valid) {
+        console.error(`❌ Invalid bootstrap for caseManagerPin: ${caseManagerPin}`);
+        return reply.code(401).send({ error: 'Invalid session - please login again' });
+      }
+
+      // Extract data from bootstrap response
+      const caseManager = {
+        caseManagerPin: bootstrapData.user.caseManagerPin,
+        caseManagerName: bootstrapData.user.caseManagerName,
+        caseManagerEmail: bootstrapData.user.caseManagerEmail,
+        phone: bootstrapData.user.phone,
+        ndaSigned: bootstrapData.gates.nda.completed,
+        userRole: bootstrapData.user.userRole,
+        lastLogin: bootstrapData.user.lastLogin
+      };
+
+      console.log(`✅ Dashboard loading for ${caseManager.caseManagerName} (${caseManagerPin}) via SSOT Bootstrap`);
+
+      // ===== MODAL DATA LOADING (Server-Side) =====
+      let modalData = null;
+
+      if (showModal === 'nda' && caseManagerPin) {
+        modalData = {
+          type: 'nda',
+          caseManager: caseManager,
+          currentStep: currentStep
+        };
+        console.log(`[NDA Modal] Loading step ${currentStep} for ${caseManagerPin}`);
+      }
+
+      if (showModal) {
+        console.log(`[SSR] Modal requested: ${showModal}, Data loaded: ${modalData ? 'Yes' : 'No'}`);
+      }
+
+      // Generate CSRF token
+      const csrfToken = fastify.jwt ? fastify.jwt.sign({
+        csrf: true,
+        caseManagerPin: caseManagerPin,
+        timestamp: Date.now()
+      }) : 'csrf-placeholder';
+
+      // Pass bootstrap data to EJS template
+      return reply.view('casemanagersDashboard', {
+        cmName: caseManager.caseManagerName,
+        userRole: caseManager.userRole,
+        pin: caseManager.caseManagerPin,
+        caseManager,
+        gates: bootstrapData.gates,
+        features: bootstrapData.features,
+        stats: bootstrapData.stats,
+        showModal: showModal || null,
+        modalData: modalData,
+        csrfToken: csrfToken,
+        currentStep: currentStep
+      });
+
+    } catch (error) {
+      console.error('❌ ERROR loading case managers dashboard:', error);
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Error message:', error.message);
+      fastify.log.error('Error loading case managers dashboard:', error);
+      return reply.code(500).send({ success: false, error: 'Failed to load dashboard', details: error.message });
+    }
   });
 
   // ==============================================

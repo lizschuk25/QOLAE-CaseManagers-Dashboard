@@ -369,13 +369,9 @@ fastify.get('/secureLogin', async (req, reply) => {
     console.log(`[SecureLogin] SSOT status retrieved for: ${caseManager.caseManagerPin}`);
 
     // ===============================================================
-    // HRCOMPLIANCE GATE CHECK
-    // Case Managers must complete compliance before accessing dashboard
+    // NOTE: Compliance gate is handled at 2FA stage (caseManagersAuthRoute.js)
+    // Consistent with Readers/Lawyers/Clients pattern - single gate only
     // ===============================================================
-    if (!caseManager.complianceSubmitted) {
-      console.log(`[SecureLogin] Case Manager ${caseManager.caseManagerPin} needs compliance - redirecting to HRCompliance`);
-      return reply.redirect(`${process.env.HRCOMPLIANCE_URL || 'https://hrcompliance.qolae.com'}/caseManagersCompliance?caseManagerPin=${caseManagerPin}`);
-    }
 
     const userStatus = {
       isFirstTime: !caseManager.passwordSetupCompleted,
