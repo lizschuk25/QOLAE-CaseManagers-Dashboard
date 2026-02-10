@@ -358,7 +358,7 @@ CaseManagers server.js, not frontend logic.
         <header class="header">
             <div>
                 <h1 class="header-title">Case Manager Dashboard</h1>
-                <p class="welcome-text">Welcome back, <%= cmName || 'Liz' %></p>
+                <p class="welcome-text">Welcome, <%= cmFirstName || cmName || 'Case Manager' %></p>
             </div>
             <div class="header-meta">
                 <span class="date-display" id="currentDate"></span>
@@ -511,10 +511,8 @@ CaseManagers server.js, not frontend logic.
 <!-- ========================================== -->
 <!-- LOCATION BLOCK 4.5: MODAL INCLUDES -->
 <!-- Research Workspace & Report Editor Modals -->
-<!-- Phase 2B Integration -->
+<!-- Phase 2B Integration (includes deferred — modal files not yet created) -->
 <!-- ========================================== -->
-    <%- include('modals/research-workspace-modal.ejs') %>
-    <%- include('modals/report-editor-modal.ejs') %>
 
 <!-- ========================================== -->
 <!-- LOCATION BLOCK 4.6: NDA MODAL OVERLAY (4-STEP WORKFLOW) -->
@@ -580,7 +578,7 @@ CaseManagers server.js, not frontend logic.
 
             // Log user role for debugging
             console.log('User role:', '<%= userRole %>');
-            console.log('Dashboard loaded for:', '<%= cmName || "Liz" %>');
+            console.log('Dashboard loaded for:', '<%= cmName || "Case Manager" %>');
         });
 
         // ===== CLEAR FILTER =====

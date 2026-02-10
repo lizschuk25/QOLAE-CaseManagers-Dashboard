@@ -100,6 +100,7 @@ export default async function (fastify, opts) {
       const caseManager = {
         caseManagerPin: bootstrapData.user.caseManagerPin,
         caseManagerName: bootstrapData.user.caseManagerName,
+        firstName: bootstrapData.user.firstName || '',
         caseManagerEmail: bootstrapData.user.caseManagerEmail,
         phone: bootstrapData.user.phone,
         ndaSigned: bootstrapData.gates.nda.completed,
@@ -135,6 +136,7 @@ export default async function (fastify, opts) {
       // Pass bootstrap data to EJS template
       return reply.view('casemanagersDashboard', {
         cmName: caseManager.caseManagerName,
+        cmFirstName: caseManager.firstName,
         userRole: caseManager.userRole,
         pin: caseManager.caseManagerPin,
         caseManager,
