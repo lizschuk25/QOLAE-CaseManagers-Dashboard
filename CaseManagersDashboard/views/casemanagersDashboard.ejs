@@ -393,13 +393,9 @@ CaseManagers server.js, not frontend logic.
                 </div>
             </div>
             <div style="display: flex; gap: 12px;">
-                <a href="/api/nda/view?caseManagerPin=<%= caseManager.caseManagerPin %>" target="_blank"
+                <a href="/caseManagersDashboard?caseManagerPin=<%= caseManager.caseManagerPin %>&showModal=nda&step=4"
                    style="background: white; color: #059669; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 13px; border: 1px solid #10b981; display: inline-flex; align-items: center; gap: 6px;">
-                    📄 View NDA
-                </a>
-                <a href="/api/nda/download?caseManagerPin=<%= caseManager.caseManagerPin %>"
-                   style="background: white; color: #059669; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 13px; border: 1px solid #10b981; display: inline-flex; align-items: center; gap: 6px;">
-                    ⬇️ Download
+                    📄 View Signed NDA
                 </a>
             </div>
         </div>

@@ -15,6 +15,8 @@ import fastifyView from '@fastify/view';
 import ejs from 'ejs';
 import fastifyFormbody from '@fastify/formbody';
 import fastifyCors from '@fastify/cors';
+import fastifyJwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -112,16 +114,28 @@ await server.register(fastifyCors, {
   credentials: true,
 });
 
-// 2. Form Body Parser
+// 2. JWT Authentication
+await server.register(fastifyJwt, {
+  secret: process.env.CASEMANAGERS_LOGIN_JWT_SECRET,
+  cookie: {
+    cookieName: 'qolaeCaseManagerToken',
+    signed: false,
+  },
+});
+
+// 3. Cookie Support
+await server.register(fastifyCookie);
+
+// 4. Form Body Parser
 await server.register(fastifyFormbody);
 
-// 3. Static Files
+// 5. Static Files
 await server.register(fastifyStatic, {
   root: path.join(__dirname, 'public'),
   prefix: '/public/',
 });
 
-// 4. View Engine (EJS)
+// 6. View Engine (EJS)
 await server.register(fastifyView, {
   engine: {
     ejs: ejs,
@@ -130,6 +144,22 @@ await server.register(fastifyView, {
   options: {
     filename: path.join(__dirname, 'views'),
   },
+});
+
+// ==============================================
+// AUTHENTICATION DECORATOR
+// ==============================================
+// JWT verification decorator (used by NDA proxy routes and other plugins)
+// @fastify/jwt is registered above — request.jwtVerify() is available
+server.decorate('authenticate', async (request, reply) => {
+  try {
+    await request.jwtVerify();
+    if (request.user.role !== 'caseManager') {
+      throw new Error('Unauthorized role');
+    }
+  } catch (error) {
+    reply.code(401).send({ success: false, error: 'Authentication required' });
+  }
 });
 
 // ==============================================
