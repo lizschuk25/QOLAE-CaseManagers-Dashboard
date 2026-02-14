@@ -227,17 +227,17 @@ const start = async () => {
     console.log('');
     console.log(`📍 Server running at: http://${host}:${port}`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`📊 Database: qolae_readers`);
+    console.log(`📊 Database: qolae_casemanagers`);
     console.log('');
     console.log('Available Routes:');
-    console.log('  🏠 Dashboard: /case-managers-dashboard');
-    console.log('  📖 Register Reader: /readers-registration-card');
-    console.log('  🔑 Generate PIN: POST /api/case-managers/generate-reader-pin');
-    console.log('  🔍 Verify Registration: POST /api/case-managers/verify-medical-registration');
-    console.log('  ✅ Register Reader: POST /api/case-managers/register-reader');
-    console.log('  ❤️ Health Check: /health');
+    console.log('  🏠 Dashboard: /caseManagersDashboard');
+    console.log('  📝 NDA Workflow: /nda/*');
+    console.log('  📋 Auto-Assign Case: POST /api/caseManagers/assignCaseAuto');
+    console.log('  📊 Cases With Priority: GET /api/caseManagers/casesWithPriority');
+    console.log('  🔔 Badge Counts: GET /api/caseManagers/badgeCounts');
+    console.log('  ❤️ Health Check: /api/caseManagers/health');
     console.log('');
-    console.log('Ready to register readers! 🚀');
+    console.log('Ready for case management! 🚀');
     console.log('');
 
   } catch (err) {

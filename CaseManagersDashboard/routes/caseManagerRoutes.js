@@ -27,14 +27,6 @@ export default async function (fastify, opts) {
   // ==============================================
 
   /**
-   * GET /readers-registration-card
-   * Display the Readers Registration Card form
-   */
-  fastify.get('/readersRegistrationCard', async (req, reply) => {
-    return reply.view('readers-registration-card');
-  });
-
-  /**
    * GET /caseManagersDashboard
    * Display Case Managers Dashboard with role-based rendering
    * Architecture: 100% Server-Side, SSOT Bootstrap Pattern (Matches LawyersDashboard)
@@ -159,76 +151,7 @@ export default async function (fastify, opts) {
   });
 
   // ==============================================
-  // LOCATION BLOCK 2: READER PIN GENERATION
-  // ==============================================
-
-  /**
-   * POST /api/case-managers/generate-reader-pin
-   * Generate unique Reader PIN from reader name
-   *
-   * Body: { readerName: string }
-   * Returns: { success: boolean, pin: string }
-   */
-  fastify.post('/api/caseManagers/generateReaderPin', async (req, reply) => {
-    return await CaseManagersController.generateReaderPIN(req, reply);
-  });
-
-  // ==============================================
-  // LOCATION BLOCK 3: MEDICAL REGISTRATION VERIFICATION
-  // ==============================================
-
-  /**
-   * POST /api/case-managers/verify-medical-registration
-   * Verify NMC/GMC professional registration number
-   *
-   * Body: {
-   *   registrationBody: 'NMC' | 'GMC' | 'Other',
-   *   registrationNumber: string
-   * }
-   * Returns: {
-   *   success: boolean,
-   *   verified: boolean,
-   *   name?: string,
-   *   status?: string
-   * }
-   */
-  fastify.post('/api/caseManagers/verifyMedicalRegistration', async (req, reply) => {
-    return await CaseManagersController.verifyMedicalRegistration(req, reply);
-  });
-
-  // ==============================================
-  // LOCATION BLOCK 4: READER REGISTRATION(HRCompliance Dashboard responsibility)
-  // ==============================================
-
-  /**
-   * POST /api/case-managers/register-reader
-   * Register a new reader in the system and send invitation email
-   *
-   * Body: {
-   *   readerPin: string,
-   *   readerName: string,
-   *   email: string,
-   *   phone?: string,
-   *   readerType: 'firstReader' | 'secondReader',
-   *   specialization?: string,
-   *   registrationBody?: 'NMC' | 'GMC' | 'Other',
-   *   registrationNumber?: string,
-   *   registrationVerified?: boolean,
-   *   sendEmail: boolean
-   * }
-   * Returns: {
-   *   success: boolean,
-   *   message: string,
-   *   readerPin: string,
-   *   emailSent: boolean
-   * }
-   */
-  fastify.post('/api/caseManagers/registerReader', async (req, reply) => {
-    return await CaseManagersController.registerReader(req, reply);
-  });
-
-  // ==============================================
-  // LOCATION BLOCK 5: AUTO-ASSIGN CASE
+  // LOCATION BLOCK 2: AUTO-ASSIGN CASE
   // ==============================================
 
   /**
@@ -256,7 +179,7 @@ export default async function (fastify, opts) {
   });
 
   // ==============================================
-  // LOCATION BLOCK 6: CASES WITH PRIORITY ALGORITHM
+  // LOCATION BLOCK 3: CASES WITH PRIORITY ALGORITHM
   // ==============================================
 
   /**
@@ -283,7 +206,7 @@ export default async function (fastify, opts) {
   });
 
   // ==============================================
-  // LOCATION BLOCK 7: BADGE COUNTS (AUTO-REFRESH)
+  // LOCATION BLOCK 4: BADGE COUNTS (AUTO-REFRESH)
   // ==============================================
 
   /**
@@ -307,7 +230,7 @@ export default async function (fastify, opts) {
   });
 
   // ==============================================
-  // LOCATION BLOCK 7: HEALTH CHECK
+  // LOCATION BLOCK 5: HEALTH CHECK
   // ==============================================
 
   /**
@@ -324,7 +247,7 @@ export default async function (fastify, opts) {
   });
 
   // ==============================================
-  // LOCATION BLOCK 8: INVOICE EMAIL AFTER INA REPORT (TODO)
+  // LOCATION BLOCK 6: INVOICE EMAIL AFTER INA REPORT (TODO)
   // ==============================================
   //
   // Purpose: Send updated invoice to Lawyer after INA report is completed
