@@ -489,32 +489,8 @@ fastify.post('/logout', async (request, reply) => {
 
 // ==============================================
 // LOCATION BLOCK 2: HELPER FUNCTIONS
+// (checkCaseManagerInSystem removed — Session 127, dead code, auth uses SSOT endpoints directly)
 // ==============================================
-
-const checkCaseManagerInSystem = async (caseManagerPin) => {
-  try {
-    const response = await axios.get(`/api/caseManager/validate/${caseManagerPin}`);
-    const result = response.data;
-
-    if (result.success && result.caseManager) {
-      fastify.log.info(`Case Manager found via API: ${result.caseManager.firstName} ${result.caseManager.lastName} (${result.caseManager.caseManagerPin})`);
-      return {
-        caseManagerPin: result.caseManager.caseManagerPin,
-        email: result.caseManager.email,
-        firstName: result.caseManager.firstName,
-        lastName: result.caseManager.lastName
-      };
-    } else {
-      fastify.log.warn(`Case Manager not found via API: ${caseManagerPin}`);
-      return null;
-    }
-  } catch (error) {
-    fastify.log.error('Error checking case manager via API:', error);
-    return null;
-  }
-};
-
-fastify.decorate('checkCaseManagerInSystem', checkCaseManagerInSystem);
 
 // ==============================================
 // LOCATION BLOCK 3: EXTERNAL ROUTE MODULES
