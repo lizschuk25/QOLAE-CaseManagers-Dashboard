@@ -9,11 +9,9 @@
 
 import CaseManagersController from '../controllers/CaseManagersController.js';
 import pg from 'pg';
+import ssotFetch from '../utils/ssotFetch.js';
 
 const { Pool } = pg;
-
-// SSOT Base URL (API-Dashboard)
-const SSOT_BASE_URL = process.env.SSOT_BASE_URL || 'https://api.qolae.com';
 
 // Database connection for modal-specific queries
 const caseManagersDb = new Pool({
@@ -54,7 +52,7 @@ export default async function (fastify, opts) {
       // SINGLE SOURCE OF TRUTH - SSOT Bootstrap only
       // ==============================================
       // Step 1: Get stored JWT from SSOT
-      const tokenResponse = await fetch(`${SSOT_BASE_URL}/auth/caseManagers/getStoredToken?caseManagerPin=${caseManagerPin}`, {
+      const tokenResponse = await ssotFetch(`/auth/caseManagers/getStoredToken?caseManagerPin=${caseManagerPin}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -68,7 +66,7 @@ export default async function (fastify, opts) {
       const { accessToken } = tokenData;
 
       // Step 2: Call SSOT bootstrap endpoint
-      const bootstrapResponse = await fetch(`${SSOT_BASE_URL}/caseManagers/workspace/bootstrap`, {
+      const bootstrapResponse = await ssotFetch(`/caseManagers/workspace/bootstrap`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

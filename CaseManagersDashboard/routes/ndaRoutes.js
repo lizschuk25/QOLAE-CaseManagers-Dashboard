@@ -16,9 +16,9 @@
 // NO direct DB queries, NO PDF manipulation, NO blockchain hashing, NO crypto imports
 // ==============================================
 
-async function ndaRoutes(fastify, options) {
+import ssotFetch from '../utils/ssotFetch.js';
 
-  const SSOT_BASE_URL = process.env.SSOT_BASE_URL || 'https://api.qolae.com';
+async function ndaRoutes(fastify, options) {
 
   // ==============================================
   // POST /nda/continueToSign
@@ -30,8 +30,8 @@ async function ndaRoutes(fastify, options) {
     const caseManagerPin = request.user.caseManagerPin;
 
     try {
-      const apiResponse = await fetch(
-        SSOT_BASE_URL + '/api/caseManagers/nda/continueToSign',
+      const apiResponse = await ssotFetch(
+        '/api/caseManagers/nda/continueToSign',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -65,8 +65,8 @@ async function ndaRoutes(fastify, options) {
     const { signatureData, acknowledgmentConfirmed } = request.body;
 
     try {
-      const apiResponse = await fetch(
-        SSOT_BASE_URL + '/api/caseManagers/nda/preview',
+      const apiResponse = await ssotFetch(
+        '/api/caseManagers/nda/preview',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -103,8 +103,8 @@ async function ndaRoutes(fastify, options) {
     const caseManagerPin = request.user.caseManagerPin;
 
     try {
-      const apiResponse = await fetch(
-        SSOT_BASE_URL + '/api/caseManagers/nda/previewPdf/' + caseManagerPin
+      const apiResponse = await ssotFetch(
+        '/api/caseManagers/nda/previewPdf/' + caseManagerPin
       );
 
       if (!apiResponse.ok) {
@@ -138,8 +138,8 @@ async function ndaRoutes(fastify, options) {
     }
 
     try {
-      const apiResponse = await fetch(
-        SSOT_BASE_URL + '/api/caseManagers/nda/sign',
+      const apiResponse = await ssotFetch(
+        '/api/caseManagers/nda/sign',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -172,8 +172,8 @@ async function ndaRoutes(fastify, options) {
     const caseManagerPin = request.user.caseManagerPin;
 
     try {
-      const apiResponse = await fetch(
-        SSOT_BASE_URL + '/api/caseManagers/nda/view/' + caseManagerPin
+      const apiResponse = await ssotFetch(
+        '/api/caseManagers/nda/view/' + caseManagerPin
       );
 
       if (!apiResponse.ok) {
@@ -202,8 +202,8 @@ async function ndaRoutes(fastify, options) {
     const caseManagerPin = request.user.caseManagerPin;
 
     try {
-      const apiResponse = await fetch(
-        SSOT_BASE_URL + '/api/caseManagers/nda/download/' + caseManagerPin
+      const apiResponse = await ssotFetch(
+        '/api/caseManagers/nda/download/' + caseManagerPin
       );
 
       if (!apiResponse.ok) {
