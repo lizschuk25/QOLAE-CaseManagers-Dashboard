@@ -259,7 +259,7 @@ export default async function (fastify, opts) {
   //
   // Implementation Notes:
   // - Invoice PDF stored in: /centralRepository/paymentInvoices/Invoice_{clientPin}.pdf
-  // - Use sendPaymentInvoiceEmail() from emailController.js
+  // - Use sendPaymentReceiptEmail() from emailController.js
   // - Include: clientPin, lawyerPin, transactionId, serviceType, finalAmount
   //
   // TODO: Implement when INA workflow is complete
