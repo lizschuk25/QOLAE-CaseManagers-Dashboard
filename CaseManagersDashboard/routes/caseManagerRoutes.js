@@ -120,7 +120,7 @@ export default async function (fastify, opts) {
       const csrfToken = fastify.jwt ? fastify.jwt.sign({
         csrf: true,
         caseManagerPin: caseManagerPin,
-        timestamp: Date.now()
+        timestamp: new Date().toISOString()
       }) : 'csrf-placeholder';
 
       // Pass bootstrap data to EJS template

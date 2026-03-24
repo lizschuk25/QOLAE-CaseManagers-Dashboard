@@ -20,14 +20,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
-import axios from 'axios';
+import ssotFetch from './utils/ssotFetch.js';
 import cors from '@fastify/cors';
 import formbody from '@fastify/formbody';
 import fastifyView from '@fastify/view';
 import cookie from '@fastify/cookie';
 import ejs from 'ejs';
+import rateLimit from '@fastify/rate-limit';
 
 // ES6 module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -37,7 +37,7 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: `${__dirname}/.env` });
 
 // A.3: Server Initialization
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({ logger: true, trustProxy: true });
 
 // ==============================================
 // LOCATION BLOCK B: MIDDLEWARE & PLUGINS
@@ -81,6 +81,11 @@ fastify.register(cookie, {
   parseOptions: {}
 });
 
+// B.3.2: Rate Limiting Plugin (per-route config only, no global default)
+await fastify.register(rateLimit, {
+  global: false
+});
+
 // B.4: Static File Serving (GDPR compliant)
 const staticRoots = [path.join(__dirname, 'public')];
 const staticPrefixes = ['/public/'];
@@ -101,6 +106,21 @@ fastify.register(fastifyView, {
     ejs: ejs
   },
   root: path.join(__dirname, 'views')
+});
+
+// B.6: Rate Limit Error Handler (429 → server-side redirect)
+fastify.setErrorHandler((error, request, reply) => {
+  if (error.statusCode === 429) {
+    const redirectMap = {
+      '/caseManagersAuth/login': '/caseManagersLogin?error=' + encodeURIComponent('Too many login attempts. Please try again in 15 minutes.'),
+      '/caseManagersAuth/requestEmailCode': '/caseManagers2fa?error=' + encodeURIComponent('Too many code requests. Please wait 10 minutes.'),
+      '/caseManagersAuth/verify2fa': '/caseManagers2fa?error=' + encodeURIComponent('Too many verification attempts. Please wait 10 minutes.'),
+      '/caseManagersAuth/secureLogin': '/secureLogin?error=' + encodeURIComponent('Too many password attempts. Please try again in 15 minutes.')
+    };
+    const redirectUrl = redirectMap[request.url.split('?')[0]] || '/caseManagersLogin?error=' + encodeURIComponent('Too many requests. Please try again later.');
+    return reply.code(302).redirect(redirectUrl);
+  }
+  reply.send(error);
 });
 
 // ==============================================
@@ -193,25 +213,37 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
   // ===============================================================
 
   try {
-    console.log(`[SSOT] PIN Access request for: ${caseManagerPin}`);
-
     const deviceFingerprint = generateDeviceFingerprint(request);
 
-    const ssotResponse = await axios.post(`${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/pinAccess`, {
-      caseManagerPin: caseManagerPin,
-      deviceFingerprint: deviceFingerprint,
-      ipAddress: userIP,
-      userAgent: userAgent
+    const ssotResponse = await ssotFetch('/auth/caseManagers/pinAccess', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        caseManagerPin: caseManagerPin,
+        deviceFingerprint: deviceFingerprint,
+        ipAddress: userIP,
+        userAgent: userAgent
+      })
     });
 
-    const ssotData = ssotResponse.data;
+    const ssotData = await ssotResponse.json();
 
-    if (!ssotData.success) {
-      console.log(`[SSOT] PIN Access failed: ${ssotData.error}`);
-      return reply.code(401).send('Invalid Case Manager PIN');
+    if (!ssotResponse.ok) {
+      if (ssotResponse.status === 401) {
+        return reply.code(404).send('Invalid Case Manager PIN');
+      }
+      if (ssotResponse.status === 403) {
+        return reply.code(403).send(`
+          <h2>Access Revoked</h2>
+          <p>Your access has been revoked. Contact support@qolae.com</p>
+        `);
+      }
+      return reply.code(500).send('Internal server error');
     }
 
-    console.log(`[SSOT] PIN Access successful for: ${caseManagerPin}, isNew: ${ssotData.isNewCaseManager}`);
+    if (!ssotData.success) {
+      return reply.code(401).send('Invalid Case Manager PIN');
+    }
 
     // Initialize session if it doesn't exist
     if (!request.session) {
@@ -256,21 +288,6 @@ fastify.get('/caseManagersLogin', async (request, reply) => {
 
   } catch (error) {
     console.error('[SSOT] CaseManagersLogin error:', error.message);
-
-    if (error.response) {
-      const status = error.response.status;
-
-      if (status === 401) {
-        return reply.code(404).send('Invalid Case Manager PIN');
-      }
-      if (status === 403) {
-        return reply.code(403).send(`
-          <h2>Access Revoked</h2>
-          <p>Your access has been revoked. Contact support@qolae.com</p>
-        `);
-      }
-    }
-
     return reply.code(500).send('Internal server error');
   }
 });
@@ -306,17 +323,19 @@ fastify.get('/caseManagers2fa', async (request, reply) => {
   }
 
   try {
-    const sessionResponse = await axios.post(
-      `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/session/validate`,
-      { token: sessionId }
-    );
+    const sessionRes = await ssotFetch('/auth/caseManagers/session/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sessionId })
+    });
+    const sessionData = await sessionRes.json();
 
-    if (!sessionResponse.data.success) {
-      viewData.error = sessionResponse.data.error || 'Session invalid. Please return to login.';
+    if (!sessionRes.ok || !sessionData.success) {
+      viewData.error = sessionData.error || 'Session invalid. Please return to login.';
       return reply.view('caseManagers2fa.ejs', viewData);
     }
 
-    const caseManager = sessionResponse.data.caseManager;
+    const caseManager = sessionData.caseManager;
 
     viewData.caseManagerPin = caseManager.caseManagerPin || '';
     viewData.email = caseManager.caseManagerEmail || '';
@@ -346,28 +365,23 @@ fastify.get('/secureLogin', async (req, reply) => {
   }
 
   if (!token) {
-    console.log('[SecureLogin] No JWT token found, redirecting to login');
     return reply.redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=sessionExpired`);
   }
 
   try {
-    const statusResponse = await axios.get(
-      `${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/loginStatus`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+    const statusRes = await ssotFetch('/auth/caseManagers/loginStatus', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-    );
+    });
+    const statusData = await statusRes.json();
 
-    if (!statusResponse.data.success) {
-      console.log('[SecureLogin] SSOT status check failed:', statusResponse.data.error);
+    if (!statusRes.ok || !statusData.success) {
       return reply.redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=statusCheckFailed`);
     }
 
-    const caseManager = statusResponse.data.caseManager;
-    console.log(`[SecureLogin] SSOT status retrieved for: ${caseManager.caseManagerPin}`);
-
+    const caseManager = statusData.caseManager;
     // ===============================================================
     // NOTE: Compliance gate is handled at 2FA stage (caseManagersAuthRoute.js)
     // Consistent with Readers/Lawyers/Clients pattern - single gate only
@@ -422,21 +436,25 @@ fastify.get('/secureLogin', async (req, reply) => {
     }
 
     // Security logging (non-blocking)
-    await axios.post(`${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/securityLog`, {
-      caseManagerPin: caseManagerPin,
-      eventType: 'secureLoginPageAccessed',
-      eventStatus: 'success',
-      details: {
-        uiState: uiState,
-        progressPercentage: progressPercentage,
-        completedSteps: completedSteps,
-        isPasswordReset: isPasswordReset,
-        source: 'CaseManagersLoginPortal'
-      },
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-      riskScore: 0
-    }).catch(err => console.log('[SecureLogin] Security log failed (non-blocking):', err.message));
+    await ssotFetch('/auth/caseManagers/securityLog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        caseManagerPin: caseManagerPin,
+        eventType: 'secureLoginPageAccessed',
+        eventStatus: 'success',
+        details: {
+          uiState: uiState,
+          progressPercentage: progressPercentage,
+          completedSteps: completedSteps,
+          isPasswordReset: isPasswordReset,
+          source: 'CaseManagersLoginPortal'
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        riskScore: 0
+      })
+    }).catch(() => {});
 
     return reply.view('secureLogin.ejs', {
       title: 'Secure Login - QOLAE Case Managers Portal',
@@ -464,15 +482,19 @@ fastify.get('/secureLogin', async (req, reply) => {
   } catch (error) {
     console.error('SecureLogin SSOT error:', error.message);
 
-    await axios.post(`${process.env.API_BASE_URL || 'https://api.qolae.com'}/auth/caseManagers/securityLog`, {
-      caseManagerPin: caseManagerPin,
-      eventType: 'secureLoginError',
-      eventStatus: 'failure',
-      details: { error: error.message, source: 'CaseManagersLoginPortal' },
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-      riskScore: 30
-    }).catch(err => console.log('[SecureLogin] Error log failed (non-blocking):', err.message));
+    await ssotFetch('/auth/caseManagers/securityLog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        caseManagerPin: caseManagerPin,
+        eventType: 'secureLoginError',
+        eventStatus: 'failure',
+        details: { error: error.message, source: 'CaseManagersLoginPortal' },
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        riskScore: 30
+      })
+    }).catch(() => {});
 
     return reply.redirect(`/caseManagersLogin?caseManagerPin=${caseManagerPin}&error=secureLoginFailed`);
   }
@@ -510,8 +532,7 @@ const start = async () => {
       host: '0.0.0.0'
     });
     const address = fastify.server.address();
-    console.log(`CaseManagersLoginPortal bound to: ${address.address}:${address.port}`);
-    fastify.log.info(`Case Managers Login Portal running on port ${fastify.server.address().port}`);
+    fastify.log.info(`CaseManagersLoginPortal running on port ${address.port}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
