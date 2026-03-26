@@ -103,7 +103,8 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
       });
 
         try {
-          const jwtToken = request.cookies?.qolaeCaseManagerToken;
+          // Use fresh token from requestToken if available, fall back to cookie
+          const jwtToken = apiResponse?.accessToken || request.cookies?.qolaeCaseManagerToken;
 
           if (!jwtToken) {
             fastify.log.warn({
@@ -496,7 +497,8 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 60 * 60 * 24
+            maxAge: 60 * 60 * 24,
+            domain: '.qolae.com'
           });
 
           const opType = isReset ? 'reset' : (isNewUser ? 'setup' : 'verify');
@@ -544,31 +546,36 @@ export default async function caseManagersAuthRoutes(fastify, opts) {
 
   fastify.post('/caseManagersAuth/logout', async (request, reply) => {
     const jwtToken = request.cookies?.qolaeCaseManagerToken;
-    const userIP = request.ip;
 
     fastify.log.info({
       event: 'caseManagerLogoutRequest',
       hasToken: !!jwtToken,
-      ip: userIP,
       timestamp: new Date().toISOString(),
       gdprCategory: 'authentication'
     });
 
     if (jwtToken) {
       try {
-        fastify.log.info({
-          event: 'jwtCleared',
-          gdprCategory: 'authentication'
-        });
+        const decoded = jwt.verify(jwtToken, process.env.CASEMANAGERS_LOGIN_JWT_SECRET, { algorithms: ['HS256'] });
+        if (decoded.caseManagerPin) {
+          await ssotFetch('/auth/invalidateSession', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userType: 'caseManagers', pin: decoded.caseManagerPin })
+          });
+        }
       } catch (err) {
-        fastify.log.error({
-          event: 'logoutError',
-          error: err.message
-        });
+        console.error('Session invalidation failed:', err.message);
       }
     }
 
-    reply.header('Set-Cookie', 'qolaeCaseManagerToken=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0');
+    reply.clearCookie('qolaeCaseManagerToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      domain: '.qolae.com'
+    });
 
     return reply.send({
       success: true,

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 // ==============================================
 // QOLAE CASE MANAGERS DASHBOARD SERVER
 // ==============================================
@@ -18,10 +19,7 @@ import fastifyCors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCookie from '@fastify/cookie';
 import ssotFetch from './utils/ssotFetch.js';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+import sessionMiddleware from './middleware/sessionMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -147,21 +145,8 @@ await server.register(fastifyView, {
   },
 });
 
-// ==============================================
-// AUTHENTICATION DECORATOR
-// ==============================================
-// JWT verification decorator (used by NDA proxy routes and other plugins)
-// @fastify/jwt is registered above — request.jwtVerify() is available
-server.decorate('authenticate', async (request, reply) => {
-  try {
-    await request.jwtVerify();
-    if (request.user.role !== 'caseManager') {
-      throw new Error('Unauthorized role');
-    }
-  } catch (error) {
-    reply.code(401).send({ success: false, error: 'Authentication required' });
-  }
-});
+// SSOT-compliant session validation (replaces authenticate decorator)
+server.addHook('preHandler', sessionMiddleware);
 
 // ==============================================
 // ROUTES REGISTRATION
@@ -193,6 +178,73 @@ server.get('/health', async (request, reply) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
   };
+});
+
+// ==============================================
+// LOGOUT ROUTES
+// ==============================================
+
+server.post('/logout', async (request, reply) => {
+  try {
+    const pin = request.user?.caseManagerPin;
+    if (pin) {
+      try {
+        await ssotFetch('/auth/invalidateSession', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userType: 'caseManagers', pin })
+        });
+      } catch (invalidateError) {
+        console.error('Session invalidation failed:', invalidateError.message);
+      }
+    }
+
+    reply.clearCookie('qolaeCaseManagerToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      domain: '.qolae.com'
+    });
+
+    return reply.send({
+      success: true,
+      redirect: '/CaseManagersLogin'
+    });
+  } catch (error) {
+    console.error('Logout error:', error.message);
+    return reply.redirect('https://casemanagers.qolae.com/caseManagersLogin');
+  }
+});
+
+server.get('/logout', async (request, reply) => {
+  try {
+    const pin = request.user?.caseManagerPin;
+    if (pin) {
+      try {
+        await ssotFetch('/auth/invalidateSession', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userType: 'caseManagers', pin })
+        });
+      } catch (invalidateError) {
+        console.error('Session invalidation failed:', invalidateError.message);
+      }
+    }
+
+    reply.clearCookie('qolaeCaseManagerToken', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/',
+      domain: '.qolae.com'
+    });
+
+    return reply.redirect('https://casemanagers.qolae.com/caseManagersLogin');
+  } catch (error) {
+    console.error('Logout error:', error.message);
+    return reply.redirect('https://casemanagers.qolae.com/caseManagersLogin');
+  }
 });
 
 // ==============================================
