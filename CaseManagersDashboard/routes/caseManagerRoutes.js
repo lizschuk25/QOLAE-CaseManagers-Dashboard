@@ -136,7 +136,8 @@ export default async function (fastify, opts) {
         showModal: showModal || null,
         modalData: modalData,
         csrfToken: csrfToken,
-        currentStep: currentStep
+        currentStep: currentStep,
+        degradedMode: req.degradedMode || false
       });
 
     } catch (error) {
